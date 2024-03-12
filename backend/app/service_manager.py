@@ -1,4 +1,5 @@
 from backend.app.environment import EnvKey, get_env_value
+from backend.services.password_strength_checker import PasswordStrengthChecker
 from devops.common.utils import get_numeric_type, get_storage_file_quantity
 from storage.implementations.binary_storage import BinaryPwnedStorage
 from storage.implementations.mocked_requester import MockedPwnedRequester
@@ -11,6 +12,7 @@ from storage.models.settings import BinaryPwnedStorageSettings
 
 class ServiceManager:
     def __init__(self):
+        """Initialize a new ServiceManager instance."""
         user_agent = get_env_value(EnvKey.STORAGE_USER_AGENT, str)
         is_mocked = get_env_value(EnvKey.IS_STORAGE_MOCKED, bool, default=False)
         requester = (
@@ -45,7 +47,20 @@ class ServiceManager:
                 resource_dir, requester, coroutine_quantity, settings
             )
         self.__storage: PwnedStorage = storage
+        self.__strength_checker: PasswordStrengthChecker = PasswordStrengthChecker()
 
     @property
     def storage(self) -> PwnedStorage:
+        """
+        Get the Pwned storage.
+        :return: The Pwned storage.
+        """
         return self.__storage
+
+    @property
+    def strength_checker(self) -> PasswordStrengthChecker:
+        """
+        Get the password strength checker.
+        :return: The password strength checker.
+        """
+        return self.__strength_checker
