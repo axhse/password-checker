@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Страница администратора</title>
+    <link rel="icon" href="/static/img/icon-admin.svg" type="image/svg" />
+    <link href="/static/lib/fonts/Montserrat.css" rel="stylesheet" />
+    <link href="/static/css/common.css" rel="stylesheet" />
+    <link href="/static/css/admin.css" rel="stylesheet" />
+    <script src="/static/lib/js/jquery-3.6.4.min.js"></script>
+    <script src="/static/js/admin.js"></script>
+  </head>
+  <body class="page">
+    <div class="gap-10vh"></div>
+    <h1>Страница администратора</h1>
+    <div class="gap-5vh"></div>
+    <div id="div-revision" hidden>
+      <div id="group-revision-buttons">
+        <button id="button-revision-start" onclick="requestUpdate()">
+          Начать обновление
+        </button>
+        <button
+          id="button-revision-cancel"
+          onclick="requestUpdateCancellation()"
+          hidden
+        >
+          Прекратить обновление
+        </button>
+      </div>
+      <div class="gap-10vh"></div>
+      <h2>Информация о последнем обновлении</h2>
+      <button id="button-update-revision-info" onclick="updateRevisionInfo()">
+        <img src="/static/img/icon-reload.svg" />
+      </button>
+      <div id="block-revision-info" class="block"></div>
+    </div>
+    <div class="gap-20vh"></div>
+  </body>
+  <script>
+    window.addEventListener('load', async () => {
+      await initializePage();
+    });
+  </script>
+</html>

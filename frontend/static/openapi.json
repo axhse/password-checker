@@ -1,0 +1,299 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "Password Checker",
+		"version": "0.1.0"
+	},
+	"paths": {
+		"/range/{prefix}": {
+			"get": {
+				"tags": ["Client API"],
+				"summary": "Get Range",
+				"parameters": [{
+					"name": "prefix",
+					"in": "path",
+					"required": true,
+					"schema": {
+						"type": "string",
+						"example": "019AF"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string",
+									"example": "0005AD76BD555C1D6D771DE417A4B87E4B4:10\n000A8DAE4228F821FB418F59826079BF368:4\n000DD7F2A1C68A35673713783CA390C9E93:255\n001E225B908BAC31C56DB04D892E47536E0:6"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/strength": {
+			"post": {
+				"tags": ["Client API"],
+				"summary": "Check Strength",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"password": {
+										"type": "string",
+										"example": "12345",
+										"description": "The password to check."
+									}
+								},
+								"required": ["password"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PasswordStrengthCheckResult"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/admin/auth": {
+			"post": {
+				"tags": ["Admin API"],
+				"summary": "Authenticate",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"password": {
+										"type": "string",
+										"example": "12345",
+										"description": "The password to check."
+									}
+								},
+								"required": ["password"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AuthResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/admin/revision": {
+			"get": {
+				"tags": ["Admin API"],
+				"summary": "Get Revision Info",
+				"parameters": [{
+					"name": "session_token",
+					"in": "header",
+					"description": "Authorization JWT",
+					"required": true,
+					"schema": {
+						"type": "string",
+						"example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcxMTQ3OTkxOX0.LzBgeAN3Ph1ggJ0DcMnAT7nIZx5XO4_jrfa_twyBNio"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Revision"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/admin/revision/start": {
+			"post": {
+				"tags": ["Admin API"],
+				"summary": "Request Storage Update",
+				"parameters": [{
+					"name": "session_token",
+					"in": "header",
+					"description": "Authorization JWT",
+					"required": true,
+					"schema": {
+						"type": "string",
+						"example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcxMTQ3OTkxOX0.LzBgeAN3Ph1ggJ0DcMnAT7nIZx5XO4_jrfa_twyBNio"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/admin/revision/cancel": {
+			"post": {
+				"tags": ["Admin API"],
+				"summary": "Request Storage Update Cancellation",
+				"parameters": [{
+					"name": "session_token",
+					"in": "header",
+					"description": "Authorization JWT",
+					"required": true,
+					"schema": {
+						"type": "string",
+						"example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcxMTQ3OTkxOX0.LzBgeAN3Ph1ggJ0DcMnAT7nIZx5XO4_jrfa_twyBNio"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateCancellationResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"PasswordStrengthCheckResult": {
+				"type": "object",
+				"properties": {
+					"strength": {
+						"type": "string",
+						"enum": [
+							"weak",
+							"strong"
+						],
+						"example": "weak",
+						"description": "Strength of the password"
+					},
+					"rule_violations": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"enum": [
+								"TOO_SHORT",
+								"TOO_MONOTONOUS",
+								"SINGLE_CATEGORY"
+							]
+						},
+						"example": [
+							"TOO_SHORT",
+							"SINGLE_CATEGORY"
+						],
+						"description": "List of password strength rule violations found in the password"
+					}
+				}
+			},
+			"AuthResponse": {
+				"type": "object",
+				"properties": {
+					"token": {
+						"type": "string",
+						"example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcxMTQ3OTkxOX0.LzBgeAN3Ph1ggJ0DcMnAT7nIZx5XO4_jrfa_twyBNio",
+						"description": "JWT for admin session"
+					}
+				}
+			},
+			"Revision": {
+				"type": "object",
+				"properties": {
+					"status": {
+						"type": "string",
+						"example": "completed",
+						"description": "Status of the revision"
+					},
+					"start_ts": {
+						"type": "string",
+						"nullable": true,
+						"example": 1711474120,
+						"description": "Start Unix timestamp of the revision"
+					},
+					"end_ts": {
+						"type": "string",
+						"nullable": true,
+						"example": 1711474171,
+						"description": "End Unix timestamp of the revision"
+					},
+					"progress": {
+						"type": "integer",
+						"nullable": true,
+						"example": 99,
+						"description": "Progress percentage of preparation phase"
+					},
+					"error_message": {
+						"type": "string",
+						"nullable": true,
+						"example": "Cannot connect to host api.pwnedpasswords.com:443 ssl:default [getaddrinfo failed]",
+						"description": "Error message in case of failure"
+					}
+				}
+			},
+			"UpdateResponse": {
+				"type": "object",
+				"properties": {
+					"response": {
+						"type": "string",
+						"enum": [
+							"started",
+							"busy"
+						],
+						"example": "started",
+						"description": "Possible response when requesting an update"
+					}
+				}
+			},
+			"UpdateCancellationResponse": {
+				"type": "object",
+				"properties": {
+					"response": {
+						"type": "string",
+						"enum": [
+							"accepted",
+							"irrelevant"
+						],
+						"example": "accepted",
+						"description": "Possible response when requesting an update cancellation"
+					}
+				}
+			}
+		}
+	}
+}

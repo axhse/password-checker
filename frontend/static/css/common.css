@@ -1,0 +1,94 @@
+body {
+    text-align: center;
+    margin: 0px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: bold;
+    color: var(--color-text);
+    background-color: var(--color-background);
+    transition: all 0.5s ease;
+}
+
+button {
+    padding: 15px 20px;
+    border-radius: 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: bold;
+    border: none;
+    outline: 2px solid var(--color-control-outline-focus);
+    font-weight: bold;
+    color: var(--color-text);
+    background-color: var(--color-button-background);
+}
+button:hover {
+    outline: 2px solid var(--color-control-outline-hover);
+    background-color: var(--color-button-background-hover);
+    cursor: pointer;
+}
+button:active {
+    outline: none;
+    background-color: var(--color-button-background-hover);
+}
+
+input {
+    text-align: center;
+    padding: 20px;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+    font-weight: bold;
+    color: var(--color-text);
+    background-color: var(--color-control-background);
+}
+input::placeholder {
+    font-family: 'Montserrat', sans-serif;
+    color: var(--color-text);
+    opacity: 0.6;
+}
+input:hover::placeholder {
+    opacity: 0.8;
+}
+input:focus::placeholder {
+    color: transparent;
+}
+
+h1, h2 {
+    margin-left: 3%;
+    margin-right: 3%;
+}
+
+.gap-5vh {
+    height: 5vh;
+}
+.gap-10vh {
+    height: 10vh;
+}
+.gap-20vh {
+    height: 20vh;
+}
+
+.input-bar {
+    display: flex;
+    padding: 10px 15px;
+    border-radius: 20px;
+    background-color: var(--color-control-background);
+}
+.input-bar:hover {
+    outline: 2px solid var(--color-control-outline-hover);
+}
+.input-bar:focus-within {
+    outline: 2px solid var(--color-control-outline-focus);
+}
+
+.input-inline {
+    width: 100%;
+    padding: 5px 10px;
+}
+
+.block {
+    padding: 15px;
+    border-radius: 20px;
+    text-align: left;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    background-color: var(--color-block-background);
+}
