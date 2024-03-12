@@ -1,0 +1,50 @@
+.page-neutral {
+    --color-text: #002C60;
+    --color-background: #64BBFF;
+    --color-control-background: #EFFBFF;
+    --color-control-outline-hover: #2F94D5;
+    --color-control-outline-focus: #006FAC;
+    --color-block-background: #D4F4FF;
+}
+.page-success {
+    --color-text: #003912;
+    --color-background: #7FF9C1;
+    --color-control-background: #F1FCF6;
+    --color-control-outline-hover: #48C591;
+    --color-control-outline-focus: #009463;
+    --color-block-background: #CEFBE3;
+}
+.page-warning {
+    --color-text: #580000;
+    --color-background: #FF8D69;
+    --color-control-background: #FFF5EF;
+    --color-control-outline-hover: #D46847;
+    --color-control-outline-focus: #A94426;
+    --color-block-background: #FFE6D7;
+}
+
+.page-warning .text-success {
+    color: #00A86C;
+}
+
+#input-bar-password {
+    margin-left: 25%;
+    margin-right: 25%;
+}
+#input-password {
+    font-size: 16px;
+}
+
+#block-password-info {
+    margin-left: 20%;
+    margin-right: 20%;
+}
+
+#password-visibility-toggle {
+    width: 36px;
+    height: 36px;
+    opacity: 0.5;
+}
+#password-visibility-toggle:hover {
+    opacity: 0.6;
+}
