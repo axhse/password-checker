@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Авторизация администратора</title>
+    <link rel="icon" href="/static/img/icon-admin.svg" type="image/svg" />
+    <link href="/static/lib/fonts/Montserrat.css" rel="stylesheet" />
+    <link href="/static/css/common.css" rel="stylesheet" />
+    <link href="/static/css/admin.css" rel="stylesheet" />
+    <script src="/static/js/admin-login.js"></script>
+  </head>
+  <body class="page">
+    <div class="gap-10vh"></div>
+    <h1>Авторизация администратора</h1>
+    <div class="gap-10vh"></div>
+    <form id="form-password" method="post">
+      <input
+        type="password"
+        name="password"
+        placeholder="Введите пароль администратора"
+        maxlength="100"
+        oninput="handlePasswordInput()"
+      />
+      <div id="password-warning" {% if is_warning_hidden %}hidden{% endif %}>
+        Неправильный пароль
+      </div>
+    </form>
+    <div class="gap-20vh"></div>
+  </body>
+</html>

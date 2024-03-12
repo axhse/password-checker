@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>API Documentation</title>
+        <link rel="icon" href="/static/img/icon-api-docs.svg" type="image/svg" />
+        <link rel="stylesheet" type="text/css" href="/static/lib/css/swagger-ui.css">
+        <script src="/static/lib/js/swagger-ui-bundle.js"></script>
+    </head>
+    <body>
+        <div id="swagger-ui"></div>
+        <script>
+            window.onload = function() {
+                fetch('/static/openapi.json')
+                .then(response => response.json())
+                .then(data => {
+                    const ui = SwaggerUIBundle({
+                        spec: data,
+                        dom_id: '#swagger-ui',
+                    });
+                });
+            };
+        </script>
+    </body>
+    </html>
