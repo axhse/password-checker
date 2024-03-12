@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Check Password</title>
+    <link
+      id="favicon"
+      rel="icon"
+      href="/static/img/icon-client-neutral.svg"
+      type="image/svg"
+    />
+    <link href="/static/lib/fonts/Montserrat.css" rel="stylesheet" />
+    <link href="/static/css/common.css" rel="stylesheet" />
+    <link href="/static/css/client.css" rel="stylesheet" />
+    <script src="/static/lib/js/jquery-3.6.4.min.js"></script>
+    <script src="/static/lib/js/crypto-js.min.js"></script>
+    <script src="/static/js/client.js"></script>
+  </head>
+  <body class="page-neutral">
+    <div class="gap-10vh"></div>
+    <h1>Check your password</h1>
+    <div class="gap-5vh"></div>
+    <div id="input-bar-password" class="input-bar">
+      <input
+        id="input-password"
+        class="input-inline"
+        type="password"
+        maxlength="100"
+        oninput="handlePasswordInput()"
+        placeholder="Enter the password"
+      />
+      <img
+        id="password-visibility-toggle"
+        src="/static/img/icon-password-show.svg"
+        onclick="togglePasswordVisibility()"
+      />
+    </div>
+    <div class="gap-10vh"></div>
+    <div id="block-password-info" class="block" hidden></div>
+    <div class="gap-20vh"></div>
+  </body>
+</html>

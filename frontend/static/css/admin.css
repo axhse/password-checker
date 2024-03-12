@@ -1,0 +1,63 @@
+.page {
+    --color-text: #00195D;
+    --color-background: #8988DD;
+    --color-control-background: #FAF8FF;
+    --color-control-outline-hover: #686ABB;
+    --color-control-outline-focus: #484D9B;
+    --color-button-background: #E0D9F3;
+    --color-button-background-hover: #F6EBFF;
+    --color-block-background: #F1EDFF;
+    --color-text-revision-info: #0087B0;
+    --color-revision-progress: #168BDF;
+    --color-error: #FFE6D7;
+    --color-error-in-block: #A33B3F;
+}
+
+.revision-prop {
+    font-size: 14px;
+    color: #686ABB;
+}
+.revision-error-message {
+    color: var(--color-error-in-block);
+}
+.revision-progress {
+    color: var(--color-revision-progress);
+}
+.revision-no-info {
+    color: var(--color-error-in-block);
+}
+
+#form-password input {
+    width: 40%;
+}
+
+#password-warning {
+    margin-top: 10px;
+    color: var(--color-error);
+}
+
+#group-revision-buttons > button {
+    margin: 0px 5px;
+}
+
+#block-revision-info {
+    margin-top: 30px;
+    margin-left: 20%;
+    margin-right: 20%;
+    padding: 30px 20px;
+    color: var(--color-text-revision-info);
+}
+
+#button-update-revision-info {
+    position: absolute;
+    right: calc(20% - 5px);
+    z-index: 1;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: -5px;
+}
+
+#button-update-revision-info > img {
+    width: 20px;
+    height: 20px;
+}
