@@ -12,7 +12,7 @@ class MockedPwnedRequester(PwnedRequester):
     RECORD_QUANTITY: int = 1009
     INCLUDED_PASSWORDS: List[Tuple[str, int]] = [
         ("hello", 273646),
-        ("hello12345678901", 10),
+        ("hello1234567890", 10),
         ("superstronger", 1),
         ("123_56789", 3),
     ]
