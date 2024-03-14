@@ -1,7 +1,7 @@
-const srcIconPasswordShow = '/static/img/icon-password-show.svg'
-const srcIconPasswordHide = '/static/img/icon-password-hide.svg'
-const hrefIconPageBeginning = '/static/img/icon-client-page-'
-const hrefIconPageEnding = '.svg'
+const srcIconPasswordShow = '/static/img/icon-password-show.svg';
+const srcIconPasswordHide = '/static/img/icon-password-hide.svg';
+const hrefIconPageBeginning = '/static/img/icon-client-page-';
+const hrefIconPageEnding = '.svg';
 
 const indicationNeutral = 'neutral';
 const indicationSuccess = 'success';
@@ -13,8 +13,7 @@ const criticalLeakThreshold = 5;
 
 const passwordCheckDelay = 240;
 
-const apiBaseUri = '/range/';
-
+const rangeApiBaseUri = '/range/';
 
 function setPageIndication(indication) {
     document.body.className = `page-${indication}`;
@@ -23,8 +22,10 @@ function setPageIndication(indication) {
 }
 
 function togglePasswordVisibility() {
-    const input = document.getElementById('password-input');
-    const visibilityToggle = document.getElementById('password-visibility-toggle');
+    const input = document.getElementById('input-password');
+    const visibilityToggle = document.getElementById(
+        'password-visibility-toggle',
+    );
     if (input.type === 'password') {
         input.type = 'text';
         visibilityToggle.src = srcIconPasswordHide;
@@ -34,12 +35,12 @@ function togglePasswordVisibility() {
     }
 }
 
-function getResultBlock() {
-    return document.getElementById('block-result');
+function getPasswordInfoBlock() {
+    return document.getElementById('block-password-info');
 }
 
 function getCurrentPassword() {
-    return document.getElementById('password-input').value;
+    return document.getElementById('input-password').value;
 }
 
 function isTooShort(password) {
@@ -62,46 +63,48 @@ function hasOnlyUppercaseLetters(password) {
     return /^[A-Z]+$/.test(password);
 }
 
-function showResult(password, leakOccasionNumber) {
-    let resultContent = '';
+function showPasswordInfo(password, leakOccasionNumber) {
+    let content = '';
     const isNotLeaked = leakOccasionNumber === 0;
     if (leakOccasionNumber === null) {
-        resultContent += '<p>Ошибка: Не удалось проверить пароль на утечки</p>';
+        content += '<p>Ошибка: Не удалось проверить пароль на утечки</p>';
     } else {
         if (leakOccasionNumber === 0) {
-            resultContent += '<p class="text-success">Утечек не обнаружено</p>';
+            content += '<p class="text-success">Утечек не обнаружено</p>';
         } else if (leakOccasionNumber < criticalLeakThreshold) {
-            resultContent += '<p>Обнаружено несколько утечек</p>';
+            content += '<p>Обнаружено несколько утечек</p>';
         } else {
-            resultContent += '<p>Обнаружено множество утечек</p>';
+            content += '<p>Обнаружено множество утечек</p>';
         }
     }
     let isWeak = false;
     if (isTooShort(password)) {
         isWeak = true;
-        resultContent += `<p>Пароль должен иметь длину не менее ${recommendedMinLength} символов</p>`;
+        content += `<p>Пароль должен иметь длину не менее ${recommendedMinLength} символов</p>`;
     } else {
         if (!isDiverse(password)) {
             isWeak = true;
-            resultContent += `<p>Пароль должен включать не менее ${recommendedMinDifferentSymbols} различных символов</p>`;
+            content += `<p>Пароль должен включать не менее ${recommendedMinDifferentSymbols} различных символов</p>`;
         } else {
             if (hasOnlyDigits(password)) {
                 isWeak = true;
-                resultContent += `<p>Пароль не должен состоять только из цифр</p>`;
+                content += `<p>Пароль не должен состоять только из цифр</p>`;
             }
             if (hasOnlyLowercaseLetters(password)) {
                 isWeak = true;
-                resultContent += `<p>Пароль не должен состоять только из строчных латинских букв</p>`;
+                content += `<p>Пароль не должен состоять только из строчных латинских букв</p>`;
             }
             if (hasOnlyUppercaseLetters(password)) {
                 isWeak = true;
-                resultContent += `<p>Пароль не должен состоять только из прописных латинских букв</p>`;
+                content += `<p>Пароль не должен состоять только из прописных латинских букв</p>`;
             }
         }
     }
-    getResultBlock().innerHTML = resultContent;
-    getResultBlock().removeAttribute('hidden');
-    setPageIndication(!isNotLeaked || isWeak ? indicationWarning : indicationSuccess);
+    getPasswordInfoBlock().innerHTML = content;
+    getPasswordInfoBlock().removeAttribute('hidden');
+    setPageIndication(
+        !isNotLeaked || isWeak ? indicationWarning : indicationSuccess,
+    );
 }
 
 function countLeakOccasions(leakRecords, hashSuffix) {
@@ -119,18 +122,20 @@ async function checkPasswordIfNotUpdated(password) {
     if (password !== getCurrentPassword()) {
         return;
     }
-    const passwordHash = CryptoJS.SHA1(password).toString(CryptoJS.enc.Hex).toUpperCase();
+    const passwordHash = CryptoJS.SHA1(password)
+        .toString(CryptoJS.enc.Hex)
+        .toUpperCase();
     const hashPrefix = passwordHash.slice(0, 5);
     const hashSuffix = passwordHash.slice(5);
     await $.ajax({
-        url: apiBaseUri + hashPrefix,
+        url: rangeApiBaseUri + hashPrefix,
         method: 'GET',
         success: function (data) {
-            showResult(password, countLeakOccasions(data, hashSuffix));
+            showPasswordInfo(password, countLeakOccasions(data, hashSuffix));
         },
         error: function () {
-            showResult(password, null);
-        }
+            showPasswordInfo(password, null);
+        },
     });
 }
 
@@ -138,8 +143,8 @@ function handlePasswordInput() {
     const currentPassword = getCurrentPassword();
     if (currentPassword === '') {
         setPageIndication(indicationNeutral);
-        getResultBlock().innerHTML = '';
-        getResultBlock().setAttribute('hidden', 'true');
+        getPasswordInfoBlock().innerHTML = '';
+        getPasswordInfoBlock().setAttribute('hidden', 'true');
         return;
     }
     setTimeout(async () => {

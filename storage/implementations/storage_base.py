@@ -153,7 +153,8 @@ class PwnedStorageBase(PwnedStorage):
         if self._revision.is_cancelling:
             self._revision.indicate_cancelled()
             self.__remove_dataset(new_dataset)
-        self._revision.indicate_cancelled()
+            return
+        self._revision.indicate_prepared()
         while self.__state.has_active_requests:
             await self.__wait_a_little()
         self.__state.mark_to_be_ignored()
@@ -176,6 +177,7 @@ class PwnedStorageBase(PwnedStorage):
         )
 
     def __remove_dataset(self, dataset: DatasetID) -> None:
+        # FIXME: Blocks everything as performs sync (about 10 seconds for 65536 files).
         try:
             remove_dir(self._get_dataset_dir(dataset))
         except Exception as error:

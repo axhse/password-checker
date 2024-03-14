@@ -30,6 +30,8 @@ class TextPwnedStorage(PwnedStorageBase):
             * PWNED_PREFIX_CAPACITY
             // self._revision_coroutine_quantity,
         ):
+            if self._revision.is_cancelling or self._revision.is_failed:
+                return
             hash_prefix = number_to_hex_code(prefix_index, PWNED_PREFIX_CAPACITY)
             file_path = join_paths(dataset_dir, f"{hash_prefix}.txt")
             write(file_path, await self._range_provider.get_range(hash_prefix))

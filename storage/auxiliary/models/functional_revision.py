@@ -27,6 +27,7 @@ class FunctionalRevision(Revision):
             RevisionStatus.NEW,
             RevisionStatus.COMPLETED,
             RevisionStatus.FAILED,
+            RevisionStatus.CANCELLED,
         ]
 
     @property

@@ -1,26 +1,43 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Проверка пароля</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link id="favicon" rel="icon" href="/static/img/icon-client-page-neutral.svg" type="image/svg">
-    <link href='/static/lib/fonts/Montserrat.css' rel='stylesheet'>
-    <link href='/static/css/client-page.css' rel='stylesheet'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      id="favicon"
+      rel="icon"
+      href="/static/img/icon-client-page-neutral.svg"
+      type="image/svg"
+    />
+    <link href="/static/lib/fonts/Montserrat.css" rel="stylesheet" />
+    <link href="/static/css/common.css" rel="stylesheet" />
+    <link href="/static/css/client-page.css" rel="stylesheet" />
     <script src="/static/lib/js/jquery-3.6.4.min.js"></script>
     <script src="/static/lib/js/crypto-js.min.js"></script>
     <script src="/static/js/client-page.js"></script>
-</head>
-<body class="page-neutral">
+  </head>
+  <body class="page-neutral">
     <div class="gap-10vh"></div>
     <h1>Проверьте свой пароль</h1>
     <div class="gap-5vh"></div>
-    <div class="input-bar">
-        <input id="password-input" class="inline-input" type="password" placeholder="Введите пароль" maxlength="100" oninput="handlePasswordInput()">
-        <img id="password-visibility-toggle" src="/static/img/icon-password-show.svg" onclick="togglePasswordVisibility()">
+    <div id="input-bar-password" class="input-bar">
+      <input
+        id="input-password"
+        class="inline-input"
+        type="password"
+        maxlength="100"
+        oninput="handlePasswordInput()"
+        placeholder="Введите пароль"
+      />
+      <img
+        id="password-visibility-toggle"
+        src="/static/img/icon-password-show.svg"
+        onclick="togglePasswordVisibility()"
+      />
     </div>
     <div class="gap-10vh"></div>
-    <div id="block-result" class="block-text" hidden></div>
+    <div id="block-password-info" class="block" hidden></div>
     <div class="gap-20vh"></div>
-</body>
+  </body>
 </html>

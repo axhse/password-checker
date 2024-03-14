@@ -49,8 +49,8 @@ async def check_strength(
             status_code=400, detail="'password' field must be a string."
         )
     result = services.strength_checker.check(password)
-    result_json = {
+    response_content = {
         "strength": result.strength.value,
         "violated_rules": [rule.value for rule in result.violated_rules],
     }
-    return JSONResponse(content=result_json)
+    return JSONResponse(content=response_content)

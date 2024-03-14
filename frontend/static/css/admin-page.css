@@ -1,0 +1,37 @@
+.page {
+    --color-text: #00195D;
+    --color-background: #8988DD;
+    --color-control-background: #FAF8FF;
+    --color-control-outline-hover: #686ABB;
+    --color-control-outline-focus: #484D9B;
+    --color-button-background: #E0D9F3;
+    --color-button-background-hover: #F6EBFF;
+    --color-block-background: #F1EDFF;
+    --color-text-revision-info: #0087B0;
+    --color-revision-progress: #168BDF;
+    --color-error-message: #A33B3F;
+}
+
+.revision-prop {
+    font-size: 14px;
+    color: #686ABB;
+}
+.revision-error-message {
+    color: var(--color-error-message);
+}
+.revision-progress {
+    color: var(--color-revision-progress);
+}
+.revision-no-info {
+    color: var(--color-error-message);
+}
+
+#group-revision-buttons > button {
+    margin: 0px 5px;
+}
+
+#block-revision-info {
+    margin-left: 20%;
+    margin-right: 20%;
+    color: var(--color-text-revision-info);
+}

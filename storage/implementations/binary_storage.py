@@ -49,7 +49,7 @@ class BinaryPwnedStorage(PwnedStorageBase):
             file_quantity * batch_index // coroutine_quantity,
             file_quantity * (batch_index + 1) // coroutine_quantity,
         ):
-            if self._revision.is_cancelling:
+            if self._revision.is_cancelling or self._revision.is_failed:
                 return
             file_path = join_paths(
                 dataset_dir, f"{number_to_hex_code(file_index, file_quantity)}.dat"
