@@ -7,10 +7,10 @@ from storage.models.revision import Revision
 class UpdateResult(Enum):
     """Possible result of an update."""
 
-    IRRELEVANT = "irrelevant"
     DONE = "done"
     CANCELLED = "cancelled"
     FAILED = "failed"
+    BUSY = "busy"
 
 
 class UpdateResponse(Enum):

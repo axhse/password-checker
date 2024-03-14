@@ -73,7 +73,7 @@ class PwnedStorageBase(PwnedStorage):
         :return: The update response status.
         """
         if not self._revision.is_idle:
-            return UpdateResult.IRRELEVANT
+            return UpdateResult.BUSY
         self._revision.indicate_started()
         await self.__update_safely()
         if self._revision.is_failed:
