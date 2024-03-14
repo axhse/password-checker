@@ -145,14 +145,16 @@ class PwnedStorageBase(PwnedStorage):
             await self.__update(new_dataset)
         except Exception as error:
             self._revision.indicate_failed(error)
-            self.__remove_dataset(new_dataset)
-            return
+        if self._revision.is_cancelled or self._revision.is_failed:
+            await self.__try_remove_dataset(new_dataset)
+        if self._revision.is_completed:
+            await self.__try_remove_dataset(new_dataset.other)
 
     async def __update(self, new_dataset: DatasetID) -> None:
         await self.__prepare_new_dataset(new_dataset)
         if self._revision.is_cancelling:
             self._revision.indicate_cancelled()
-            self.__remove_dataset(new_dataset)
+            await self.__try_remove_dataset(new_dataset)
             return
         self._revision.indicate_prepared()
         while self.__state.has_active_requests:
@@ -163,12 +165,12 @@ class PwnedStorageBase(PwnedStorage):
         self.__state.mark_not_to_be_ignored()
         self.__dump_state()
         self._revision.indicate_transited()
-        self.__remove_dataset(new_dataset.other)
+        await self.__try_remove_dataset(new_dataset.other)
         self._revision.indicate_completed()
 
     async def __prepare_new_dataset(self, dataset: DatasetID) -> None:
         dataset_dir = self._get_dataset_dir(dataset)
-        make_empty_dir(dataset_dir)
+        await asyncio.to_thread(lambda: make_empty_dir(dataset_dir))
         await asyncio.gather(
             *[
                 self._prepare_batch(dataset, batch_index)
@@ -176,10 +178,9 @@ class PwnedStorageBase(PwnedStorage):
             ]
         )
 
-    def __remove_dataset(self, dataset: DatasetID) -> None:
-        # FIXME: Blocks everything as performs sync (about 10 seconds for 65536 files).
+    async def __try_remove_dataset(self, dataset: DatasetID) -> None:
         try:
-            remove_dir(self._get_dataset_dir(dataset))
+            await asyncio.to_thread(lambda: remove_dir(self._get_dataset_dir(dataset)))
         except Exception as error:
             # TODO: Log error.
             pass

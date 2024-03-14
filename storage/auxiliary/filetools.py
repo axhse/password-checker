@@ -41,20 +41,6 @@ def is_dir(path: str) -> bool:
     return os.path.exists(path) and os.path.isdir(path)
 
 
-def clear_dir(path: str) -> None:
-    """
-    Clear all files and subdirectories in a directory.
-
-    :param path: Directory path.
-    """
-    if os.path.isdir(path):
-        _, dir_paths, file_paths = next(os.walk(path))
-        for dir_path in dir_paths:
-            shutil.rmtree(join_paths(path, dir_path))
-        for file_path in file_paths:
-            os.remove(join_paths(path, file_path))
-
-
 def make_dir_if_not_exists(path: str) -> None:
     """
     Create a directory if it does not exist.
@@ -65,16 +51,6 @@ def make_dir_if_not_exists(path: str) -> None:
         os.mkdir(path)
 
 
-def make_empty_dir(path: str) -> None:
-    """
-    Create an empty directory by first making sure it exists and then clearing it.
-
-    :param path: Directory path.
-    """
-    make_dir_if_not_exists(path)
-    clear_dir(path)
-
-
 def remove_dir(path: str) -> None:
     """
     Remove a directory and its content.
@@ -83,6 +59,16 @@ def remove_dir(path: str) -> None:
     """
     if os.path.isdir(path):
         shutil.rmtree(path)
+
+
+def make_empty_dir(path: str) -> None:
+    """
+    Create an empty directory or clear the existing one.
+
+    :param path: Directory path.
+    """
+    remove_dir(path)
+    make_dir_if_not_exists(path)
 
 
 def create_empty_file(path: str) -> None:

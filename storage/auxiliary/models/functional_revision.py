@@ -55,6 +55,14 @@ class FunctionalRevision(Revision):
         return self._status == RevisionStatus.CANCELLATION
 
     @property
+    def is_completed(self) -> bool:
+        """
+        Check if the revision is successfully completed.
+        :return: True if the revision is successfully completed, False otherwise.
+        """
+        return self._status == RevisionStatus.COMPLETED
+
+    @property
     def is_cancelled(self) -> bool:
         """
         Check if the revision is cancelled.

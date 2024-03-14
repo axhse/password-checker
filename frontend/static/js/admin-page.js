@@ -67,13 +67,13 @@ function showRevisionInfo(data) {
             const start_datetime = new Date(
                 data.start_ts * 1000,
             ).toLocaleString('ru-RU');
-            content += `<p><span class="revision-prop">Время начала</span>&nbsp;&nbsp;${start_datetime}</p>`;
+            content += `<p><span class="revision-prop">Время начала обновления</span>&nbsp;&nbsp;${start_datetime}</p>`;
         }
         if (data.end_ts !== null && data.end_ts !== undefined) {
             const end_datetime = new Date(data.end_ts * 1000).toLocaleString(
                 'ru-RU',
             );
-            content += `<p><span class="revision-prop">Время завершения</span>&nbsp;&nbsp;${end_datetime}</p>`;
+            content += `<p><span class="revision-prop">Время завершения обновления</span>&nbsp;&nbsp;${end_datetime}</p>`;
         }
     }
     const revisionInfoBlock = document.getElementById('block-revision-info');
