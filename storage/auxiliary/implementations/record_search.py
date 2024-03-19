@@ -41,6 +41,7 @@ class PwnedRecordSearch:
                 has_desired_stored_prefix_odd_length,
                 data_file,
                 PwnedRecordSearch.Boundary.RIGHT,
+                left_index,
             )
             return self.__load_range(left_index, right_index, file_code, data_file)
 
@@ -62,10 +63,11 @@ class PwnedRecordSearch:
         has_desired_stored_prefix_odd_length: bool,
         file: BinaryIO,
         boundary: Boundary,
+        left_offset: int = 0,
     ) -> int:
         record_size = self.__converter.record_size
         prefix_beginning_size = len(desired_stored_bytes)
-        left = 0
+        left = left_offset
         right = 1
         file.seek(0)
         while file.read(1):
