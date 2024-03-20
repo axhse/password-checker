@@ -83,7 +83,7 @@ class PwnedRecordSearch:
             beginning_bytes = file.read(prefix_beginning_size)
             if has_desired_stored_prefix_odd_length:
                 beginning_bytes = bytearray(beginning_bytes)
-                beginning_bytes[-1] = beginning_bytes[-1] // 16 * 16
+                beginning_bytes[-1] = beginning_bytes[-1] >> 4 << 4
             is_left_to_shift = (
                 beginning_bytes < desired_stored_bytes
                 if boundary == boundary.LEFT
