@@ -15,7 +15,7 @@ router = APIRouter()
 async def get_client_page(
     request: Request, templates: Jinja2Templates = Depends(dependencies.templates)
 ) -> Response:
-    return templates.TemplateResponse("client-page.html", {"request": request})
+    return templates.TemplateResponse("client/client.html", {"request": request})
 
 
 @router.get("/range/{prefix}")

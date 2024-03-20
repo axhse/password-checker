@@ -1,6 +1,6 @@
 const srcIconPasswordShow = '/static/img/icon-password-show.svg';
 const srcIconPasswordHide = '/static/img/icon-password-hide.svg';
-const hrefIconPageBeginning = '/static/img/icon-client-page-';
+const hrefIconPageBeginning = '/static/img/icon-client-';
 const hrefIconPageEnding = '.svg';
 
 const indicationNeutral = 'neutral';

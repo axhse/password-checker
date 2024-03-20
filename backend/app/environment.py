@@ -6,6 +6,11 @@ from typing import Type, Union
 class EnvKey(Enum):
     """Environment variable name."""
 
+    HTTPS_ONLY = auto()
+
+    ADMIN_PASSWORD = auto()
+    ADMIN_SESSION_LIFETIME_IN_MINUTES = auto()
+
     STORAGE_RESOURCE_DIR = auto()
     STORAGE_USER_AGENT = auto()
     STORAGE_COROUTINES = auto()

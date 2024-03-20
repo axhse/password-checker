@@ -22,6 +22,7 @@ button {
 button:hover {
     outline: 2px solid var(--color-control-outline-hover);
     background-color: var(--color-button-background-hover);
+    cursor: pointer;
 }
 button:active {
     outline: none;
@@ -30,6 +31,8 @@ button:active {
 
 input {
     text-align: center;
+    padding: 20px;
+    border-radius: 20px;
     border: none;
     outline: none;
     font-weight: bold;
@@ -71,7 +74,7 @@ input:focus::placeholder {
     outline: 2px solid var(--color-control-outline-focus);
 }
 
-.inline-input {
+.input-inline {
     width: 100%;
     padding: 5px 10px;
 }

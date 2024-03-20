@@ -2,6 +2,10 @@ const pageAutoUpdateInterval = 60000;
 
 const apiBaseUri = '/admin/';
 
+function redirectToLoginPage() {
+    window.location.href = apiBaseUri + 'login';
+}
+
 function updateRevisionButtons(revisionStatus) {
     const buttonRevisionStart = document.getElementById(
         'button-revision-start',
@@ -88,7 +92,10 @@ async function updateRevisionInfo() {
         success: function (data) {
             showRevisionInfo(data);
         },
-        error: function () {
+        error: function (response) {
+            if (response.status === 401) {
+                redirectToLoginPage();
+            }
             showRevisionInfo(null);
         },
     });
@@ -98,6 +105,11 @@ async function requestUpdate() {
     await $.ajax({
         url: apiBaseUri + 'revision/start',
         method: 'POST',
+        error: function (response) {
+            if (response.status === 401) {
+                redirectToLoginPage();
+            }
+        },
     });
     await updateRevisionInfo();
 }
@@ -106,6 +118,11 @@ async function requestUpdateCancellation() {
     await $.ajax({
         url: apiBaseUri + 'revision/cancel',
         method: 'POST',
+        error: function (response) {
+            if (response.status === 401) {
+                redirectToLoginPage();
+            }
+        },
     });
     await updateRevisionInfo();
 }

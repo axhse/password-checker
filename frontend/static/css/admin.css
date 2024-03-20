@@ -9,7 +9,8 @@
     --color-block-background: #F1EDFF;
     --color-text-revision-info: #0087B0;
     --color-revision-progress: #168BDF;
-    --color-error-message: #A33B3F;
+    --color-error: #FFE6D7;
+    --color-error-in-block: #A33B3F;
 }
 
 .revision-prop {
@@ -17,13 +18,13 @@
     color: #686ABB;
 }
 .revision-error-message {
-    color: var(--color-error-message);
+    color: var(--color-error-in-block);
 }
 .revision-progress {
     color: var(--color-revision-progress);
 }
 .revision-no-info {
-    color: var(--color-error-message);
+    color: var(--color-error-in-block);
 }
 
 #group-revision-buttons > button {
@@ -34,4 +35,13 @@
     margin-left: 20%;
     margin-right: 20%;
     color: var(--color-text-revision-info);
+}
+
+#form-password input {
+    width: 40%;
+}
+
+#password-warning {
+    margin-top: 10px;
+    color: var(--color-error);
 }
