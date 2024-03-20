@@ -1,4 +1,7 @@
+from json import JSONDecodeError
+
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from pydantic import ValidationError
 from starlette.responses import JSONResponse, RedirectResponse, Response
 from starlette.templating import Jinja2Templates
 
@@ -103,9 +106,24 @@ async def post_login_form(
 
 @router.post("/token")
 async def get_session_token(
-    password: str = Form(default=""),
+    request: Request,
     auth_service: AuthService = Depends(dependencies.auth_service),
 ) -> Response:
+    try:
+        body_json = await request.json()
+    except (ValidationError, JSONDecodeError):
+        raise HTTPException(
+            status_code=400, detail="Invalid body format: JSON is expected."
+        )
+    if "password" not in body_json:
+        raise HTTPException(
+            status_code=400, detail="'password' field is required in the JSON body."
+        )
+    password = body_json["password"]
+    if not isinstance(password, str):
+        raise HTTPException(
+            status_code=400, detail="'password' field must be a string."
+        )
     if not auth_service.is_admin_password(password):
         raise HTTPException(status_code=401, detail="Incorrect password")
     response_content = {"token": auth_service.create_admin_session_token()}
