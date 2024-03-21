@@ -13,7 +13,7 @@ router = APIRouter(prefix="/admin")
 
 
 def require_admin_session(request: Request) -> None:
-    if not dependencies.auth_service().has_admin_session(request.cookies):
+    if not dependencies.auth_service().has_admin_session(request):
         raise HTTPException(status_code=401, detail="Not authorized")
 
 
@@ -23,7 +23,7 @@ async def get_admin_page(
     templates: Jinja2Templates = Depends(dependencies.templates),
     auth_service: AuthService = Depends(dependencies.auth_service),
 ) -> Response:
-    if not auth_service.has_admin_session(request.cookies):
+    if not auth_service.has_admin_session(request):
         return RedirectResponse(router.url_path_for(get_login_page.__name__), 308)
 
     return templates.TemplateResponse("admin/admin.html", {"request": request})
@@ -80,7 +80,7 @@ async def get_login_page(
     auth_service: AuthService = Depends(dependencies.auth_service),
     templates: Jinja2Templates = Depends(dependencies.templates),
 ) -> Response:
-    if auth_service.has_admin_session(request.cookies):
+    if auth_service.has_admin_session(request):
         return RedirectResponse(router.url_path_for(get_admin_page.__name__), 303)
     return templates.TemplateResponse(
         "admin/login.html", {"request": request, "is_warning_hidden": True}
@@ -104,8 +104,8 @@ async def post_login_form(
     return response
 
 
-@router.post("/token")
-async def get_session_token(
+@router.post("/auth")
+async def authenticate(
     request: Request,
     auth_service: AuthService = Depends(dependencies.auth_service),
 ) -> Response:

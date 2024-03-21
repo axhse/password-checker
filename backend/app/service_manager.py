@@ -20,7 +20,7 @@ class ServiceManager:
             if is_mocked
             else PwnedRequester(user_agent)
         )
-        is_text = get_env_value(EnvKey.IS_STORAGE_TEXT, bool, default=False)
+        is_text = get_env_value(EnvKey.IS_STORAGE_TEXT, bool)
         resource_dir = get_env_value(EnvKey.STORAGE_RESOURCE_DIR, str)
         coroutine_quantity = get_env_value(
             EnvKey.STORAGE_COROUTINES,

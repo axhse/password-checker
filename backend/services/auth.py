@@ -1,9 +1,9 @@
 import hashlib
 import secrets
 import time
-from typing import Dict
 
 import jwt
+from starlette.requests import Request
 
 from backend.app.environment import EnvKey, get_env_value
 
@@ -14,7 +14,7 @@ class AuthService:
     def __init__(self):
         self.__session_secret_key = secrets.token_hex(32)
         self.__admin_session_lifetime: int = 60 * get_env_value(
-            EnvKey.ADMIN_SESSION_LIFETIME_IN_MINUTES, int
+            EnvKey.ADMIN_SESSION_LIFETIME_IN_MINUTES, int, default=64
         )
         admin_password = get_env_value(EnvKey.ADMIN_PASSWORD, str)
         self.__encoded_admin_password: str = self.__encode_password(admin_password)
@@ -26,10 +26,13 @@ class AuthService:
         }
         return jwt.encode(payload, self.__session_secret_key, algorithm="HS256")
 
-    def has_admin_session(self, cookies: Dict) -> bool:
-        if self.SESSION_TOKEN_COOKIE_NAME not in cookies:
-            return False
-        jwt_data = cookies.get(self.SESSION_TOKEN_COOKIE_NAME)
+    def has_admin_session(self, request: Request) -> bool:
+        if self.SESSION_TOKEN_COOKIE_NAME in request.headers:
+            jwt_data = request.headers.get(self.SESSION_TOKEN_COOKIE_NAME)
+        else:
+            if self.SESSION_TOKEN_COOKIE_NAME not in request.cookies:
+                return False
+            jwt_data = request.cookies.get(self.SESSION_TOKEN_COOKIE_NAME)
         try:
             payload = jwt.decode(
                 jwt_data, self.__session_secret_key, algorithms=["HS256"]
