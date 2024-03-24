@@ -99,8 +99,7 @@ async def post_login_form(
             "admin/login.html", {"request": request, "is_warning_hidden": False}
         )
     response = RedirectResponse(router.url_path_for(get_admin_page.__name__), 303)
-    session_token = auth_service.create_admin_session_token()
-    response.set_cookie(key=AuthService.SESSION_TOKEN_COOKIE_NAME, value=session_token)
+    auth_service.set_admin_session(response)
     return response
 
 

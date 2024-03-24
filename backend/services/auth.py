@@ -4,6 +4,7 @@ import time
 
 import jwt
 from starlette.requests import Request
+from starlette.responses import Response
 
 from backend.app.environment import EnvKey, get_env_value
 
@@ -13,11 +14,21 @@ class AuthService:
 
     def __init__(self):
         self.__session_secret_key = secrets.token_hex(32)
+        self.__is_https_only = get_env_value(EnvKey.HTTPS_ONLY, bool)
         self.__admin_session_lifetime: int = 60 * get_env_value(
             EnvKey.ADMIN_SESSION_LIFETIME_IN_MINUTES, int, default=64
         )
         admin_password = get_env_value(EnvKey.ADMIN_PASSWORD, str)
         self.__encoded_admin_password: str = self.__encode_password(admin_password)
+
+    def set_admin_session(self, response: Response) -> None:
+        session_token = self.create_admin_session_token()
+        response.set_cookie(
+            key=AuthService.SESSION_TOKEN_COOKIE_NAME,
+            value=session_token,
+            secure=self.__is_https_only,
+            httponly=True,
+        )
 
     def create_admin_session_token(self) -> str:
         payload = {
