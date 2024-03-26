@@ -6,19 +6,35 @@ class StorageFileQuantity(Enum):
     """The number of files (batches) in which the storage stores its data."""
 
     N_1 = 1
+    """A single file."""
+
     N_16 = 16
+    """16 files."""
+
     N_256 = 16**2
+    """256 files."""
+
     N_4096 = 16**3
+    """4096 files."""
+
     N_65536 = 16**4
+    """65536 files."""
+
     N_1048576 = 16**5
+    """1048576 files."""
 
 
 class NumericType(Enum):
     """Integer numeric types with specific byte size."""
 
     BYTE = 1
+    """Single-byte type."""
+
     SHORT = 2
+    """2-byte type."""
+
     INTEGER = 4
+    """4-byte type."""
 
     @property
     def byte_length(self) -> int:
@@ -49,7 +65,10 @@ class BinaryPwnedStorageSettings:
     """Settings for BinaryPwnedStorage."""
 
     DEFAULT_FILE_QUANTITY = StorageFileQuantity.N_65536
+    """The default number of files to store data."""
+
     DEFAULT_OCCASION_NUMERIC_TYPE = NumericType.INTEGER
+    """The default size of stored leak occasion unsigned number in bytes."""
 
     def __init__(
         self,

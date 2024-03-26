@@ -5,10 +5,12 @@ from storage.models.settings import NumericType, StorageFileQuantity
 STORAGE_FILE_QUANTITY_INT_OPTIONS: List[int] = [
     quantity.value for quantity in StorageFileQuantity
 ]
+"""All possible options for storage file quantity."""
 
 NUMERIC_TYPE_INT_OPTIONS: List[int] = [
     numeric_type.value for numeric_type in NumericType
 ]
+"""All possible options for numeric type."""
 
 
 def get_storage_file_quantity(file_quantity_number: int) -> StorageFileQuantity:

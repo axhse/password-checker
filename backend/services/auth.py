@@ -11,9 +11,13 @@ from backend.app.environment import EnvVar
 
 class AuthService:
     SESSION_TOKEN_COOKIE_NAME = "session_token"
+    """The cookie name for the session token."""
+
     DEFAULT_ADMIN_SESSION_LIFETIME_IN_MINUTES = 60
+    """The default administrator session lifetime in minutes."""
 
     def __init__(self):
+        """Initialize a new AuthService instance."""
         self.__session_secret_key: str = secrets.token_hex(32)
         self.__is_https_only: bool = EnvVar.App.HTTPS_ONLY.get()
         self.__admin_session_lifetime: int = (
@@ -26,6 +30,10 @@ class AuthService:
         self.__encoded_admin_password: str = self.__encode_password(admin_password)
 
     def set_admin_session(self, response: Response) -> None:
+        """
+        Set an admin session cookie for the provided response.
+        :param response: Response to set the admin session.
+        """
         session_token = self.create_admin_session_token()
         response.set_cookie(
             key=AuthService.SESSION_TOKEN_COOKIE_NAME,
@@ -35,6 +43,10 @@ class AuthService:
         )
 
     def create_admin_session_token(self) -> str:
+        """
+        Create a new admin session token.
+        :return: A string representing the admin session token.
+        """
         payload = {
             "sub": "admin",
             "exp": self.__get_current_ts() + self.__admin_session_lifetime,
@@ -42,6 +54,12 @@ class AuthService:
         return jwt.encode(payload, self.__session_secret_key, algorithm="HS256")
 
     def has_admin_session(self, request: Request) -> bool:
+        """
+        Checks if the request has a cookie representing an active admin session.
+
+        :param request: Request to check for an admin session.
+        :return: True if an active admin session exists for the request, False otherwise.
+        """
         if self.SESSION_TOKEN_COOKIE_NAME in request.headers:
             jwt_data = request.headers.get(self.SESSION_TOKEN_COOKIE_NAME)
         else:
@@ -63,6 +81,12 @@ class AuthService:
             return False
 
     def is_admin_password(self, password: str) -> bool:
+        """
+        Checks if the provided password matches the encoded admin password.
+
+        :param password: Password to be checked.
+        :return: True if the provided password matches the encoded admin password, False otherwise.
+        """
         return self.__encoded_admin_password == self.__encode_password(password)
 
     @staticmethod

@@ -10,16 +10,19 @@ class MockedPwnedRequester(PwnedRequester):
     """Mocked Pwned API client."""
 
     RECORD_QUANTITY: int = 1009
+    """The quantity of fictive records to be generated."""
+
     INCLUDED_PASSWORDS: List[str] = [
         "hello",
         "hello12345",
         "123_56789",
     ]
+    """List of passwords for which real data will be requested."""
 
     def __init__(self, user_agent: str):
         """
-        Initialize Pwned Requester.
-        :param user_agent: The user agent value for Pwned range api.
+        Initialize a new MockedPwnedRequester instance.
+        :param user_agent: The user agent value for the Pwned range API.
         """
         super().__init__(user_agent)
         self.__records: List[str] = [

@@ -7,7 +7,7 @@ services_instance: Services = Services()
 
 def services() -> Services:
     """
-    Get the services.
+    Get services.
     :return: The services.
     """
     return services_instance

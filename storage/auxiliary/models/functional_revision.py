@@ -6,6 +6,8 @@ from storage.models.revision import Revision, RevisionStatus
 
 
 class FunctionalRevision(Revision):
+    """Extended Revision class with auxiliary behavior."""
+
     def __init__(self):
         """Initialize a new FunctionalRevision instance."""
         super().__init__()
@@ -124,7 +126,6 @@ class FunctionalRevision(Revision):
     def to_dto(self) -> Revision:
         """
         Convert the FunctionalRevision to a pure Revision instance.
-
         :return: A Revision instance representing the current state of the revision.
         """
         return Revision(

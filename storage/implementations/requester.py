@@ -13,14 +13,16 @@ class PwnedRequester(PwnedRangeProvider):
     """Pwned API client."""
 
     PWNED_RANGE_API_BASE_URI: str = "https://api.pwnedpasswords.com/range/"
-    EMPTY_USER_AGENT: str = ""
-    RETRY_DELAYS: List[float] = [0, 30]
-    RETRY_QUANTITY: int = len(RETRY_DELAYS)
+    """API base URI for the Pwned password leak range API"""
+
+    RETRY_DELAYS: List[int] = [0, 30]
+    """List of time delays (in seconds) for retry attempts."""
 
     def __init__(self, user_agent: str):
         """
-        Initialize Pwned Requester.
-        :param user_agent: The user agent header value to be used in HTTP requests. More details: https://haveibeenpwned.com/API/v2#UserAgent
+        Initialize a new PwnedRequester instance.
+        :param user_agent: The user agent header value to be used in HTTP requests.
+                           More details: https://haveibeenpwned.com/API/v2#UserAgent
         """
         self.__user_agent: str = user_agent
 
@@ -32,11 +34,11 @@ class PwnedRequester(PwnedRangeProvider):
         :param hash_prefix: The hash prefix to query.
         :return: The range as plain text.
         """
-        for delay_index in range(self.RETRY_QUANTITY):
+        for delay_index in range(len(self.RETRY_DELAYS)):
             try:
                 return await self.get_range(hash_prefix)
             except ClientResponseError:
-                await self.__wait_for_delay(delay_index)
+                await self.__wait_for_delay(self.RETRY_DELAYS[delay_index])
         return await self.get_range(hash_prefix)
 
     async def get_range(self, hash_prefix: str) -> str:
@@ -56,5 +58,5 @@ class PwnedRequester(PwnedRangeProvider):
                 return (await response.text()).replace("\r\n", "\n")
 
     @staticmethod
-    async def __wait_for_delay(delay_index) -> None:
-        await asyncio.sleep(PwnedRequester.RETRY_DELAYS[delay_index])
+    async def __wait_for_delay(delay: int) -> None:
+        await asyncio.sleep(delay)

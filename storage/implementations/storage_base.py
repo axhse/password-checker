@@ -27,14 +27,25 @@ from storage.models.revision import Revision
 
 
 class PwnedStorageBase(PwnedStorage):
-    """The base for Pwned storages."""
+    """The base for Pwned storage."""
 
     DEFAULT_REVISION_COROUTINE_QUANTITY: int = 64
+    """Default quantity of coroutines to be used during update."""
+
     STATE_WAIT_TIME_SECONDS: float = 0.5
+    """Wait time in seconds between state checks."""
+
     STATE_FILE: str = "state.json"
+    """The filename for storing state information."""
+
     IMPLEMENTATION_FILE: str = "implementation.json"
+    """The filename for storing implementation information."""
+
     IMPLEMENTATION_NAME_KEY: str = "name"
+    """The key in the implementation information JSON file to identify the implementation name."""
+
     DEFAULT_DATASET: DatasetID = DatasetID.A
+    """The default dataset to be used."""
 
     def __init__(
         self,
@@ -43,10 +54,10 @@ class PwnedStorageBase(PwnedStorage):
         revision_coroutine_quantity: int = DEFAULT_REVISION_COROUTINE_QUANTITY,
     ):
         """
-        Initialize Pwned storage base.
+        Initialize the Pwned storage base.
 
         :param resource_dir: The directory path for storing resources.
-        :param range_provider: The instance of Pwned range provider.
+        :param range_provider: The instance of the Pwned range provider.
         :param revision_coroutine_quantity: The number of coroutines to be used for requesting hashed during revision.
         """
         self.__resource_dir: str = resource_dir

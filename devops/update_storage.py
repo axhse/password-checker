@@ -20,7 +20,9 @@ if __name__ == "__main__":
         BinaryPwnedStorageSettings.DEFAULT_OCCASION_NUMERIC_TYPE.value
     )
 
-    parser = argparse.ArgumentParser(description="Update Pwned leak record storage.")
+    parser = argparse.ArgumentParser(
+        description="Update the Pwned leak record storage."
+    )
     parser.add_argument(
         "resource_dir",
         type=str,
@@ -29,8 +31,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "user_agent",
         type=str,
-        help="The user agent header value to be sent to Pwned API. "
-        "More details: https://haveibeenpwned.com/API/v2#UserAgent",
+        help="The user agent header value to be sent to the Pwned API. "
+        "For more details, see: https://haveibeenpwned.com/API/v2#UserAgent",
     )
     parser.add_argument(
         "-c",
@@ -52,7 +54,7 @@ if __name__ == "__main__":
         "-t",
         "--text-implementation",
         action="store_true",
-        help="Whether to use a text implementation of storage. Binary implementation is used by default.",
+        help="Whether to use a text implementation of the storage. The binary implementation is used by default.",
     )
     parser.add_argument(
         "-f",
@@ -69,7 +71,7 @@ if __name__ == "__main__":
         type=int,
         choices=NUMERIC_TYPE_INT_OPTIONS,
         default=default_occasion_byte_number,
-        help="The size of stored leak occasion unsigned number in bytes (for binary implementation)."
+        help="The size of the stored leak occasion unsigned number in bytes (for binary implementation)."
         f" Default: {default_occasion_byte_number}.",
     )
 

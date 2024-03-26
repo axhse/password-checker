@@ -7,15 +7,23 @@ class PasswordStrength(Enum):
     """Password strength."""
 
     WEAK = "weak"
+    """The password is weak."""
+
     STRONG = "strong"
+    """The password is strong."""
 
 
 class PasswordStrengthRuleViolation(Enum):
     """Password strength rule violation."""
 
     TOO_SHORT = "TOO_SHORT"
+    """The password is too short."""
+
     TOO_MONOTONOUS = "TOO_MONOTONOUS"
+    """The password lacks enough different symbols."""
+
     SINGLE_CATEGORY = "SINGLE_CATEGORY"
+    """All symbols of the password are from the same category."""
 
 
 class PasswordStrengthCheckResult:
@@ -30,7 +38,7 @@ class PasswordStrengthCheckResult:
         Initialize a new PasswordStrengthCheckResult instance.
 
         :param strength: The strength of the password.
-        :param rule_violations: The list of password strength rule violations.
+        :param rule_violations: A list of password strength rule violations.
         """
         self.__strength: PasswordStrength = strength
         self.__violated_rules: List[PasswordStrengthRuleViolation] = rule_violations
@@ -46,8 +54,8 @@ class PasswordStrengthCheckResult:
     @property
     def violated_rules(self) -> List[PasswordStrengthRuleViolation]:
         """
-        Get the list of password strength rule violations.
-        :return: The list of password strength rule violations.
+        Get a list of password strength rule violations.
+        :return: A list of password strength rule violations.
         """
         return self.__violated_rules
 
@@ -55,7 +63,8 @@ class PasswordStrengthCheckResult:
 class PasswordStrengthChecker:
     """Checks the strength of passwords."""
 
-    def check(self, password: str) -> PasswordStrengthCheckResult:
+    @staticmethod
+    def check(password: str) -> PasswordStrengthCheckResult:
         """
         Check the strength of a password.
 

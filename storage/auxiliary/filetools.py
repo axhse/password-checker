@@ -16,7 +16,7 @@ def join_paths(*paths: str) -> str:
     Join multiple path components into a single path.
 
     :param paths: Path components.
-    :return: Joined path.
+    :return: The joined path.
     """
     return os.path.join(*paths)
 
@@ -44,8 +44,7 @@ def is_dir(path: str) -> bool:
 def make_dir_if_not_exists(path: str) -> None:
     """
     Create a directory if it does not exist.
-
-    :param path: Directory path.
+    :param path: The directory path.
     """
     if not is_dir(path):
         os.mkdir(path)
@@ -53,9 +52,8 @@ def make_dir_if_not_exists(path: str) -> None:
 
 def remove_dir(path: str) -> None:
     """
-    Remove a directory and its content.
-
-    :param path: Directory path.
+    Remove a directory and its contents.
+    :param path: The directory path.
     """
     if os.path.isdir(path):
         shutil.rmtree(path)
@@ -64,78 +62,34 @@ def remove_dir(path: str) -> None:
 def make_empty_dir(path: str) -> None:
     """
     Create an empty directory or clear the existing one.
-
-    :param path: Directory path.
+    :param path: The directory path.
     """
     remove_dir(path)
     make_dir_if_not_exists(path)
 
 
-def create_empty_file(path: str) -> None:
-    """
-    Create an empty file.
-
-    :param path: File path.
-    """
-    with open(path, "w"):
-        pass
-
-
-def create_file_if_not_exists(path: str) -> None:
-    """
-    Create a file if it does not exist.
-
-    :param path: File path.
-    """
-    if not is_file(path):
-        create_empty_file(path)
-
-
 def remove_file(path: str) -> None:
     """
     Remove a file if it exists.
-
-    :param path: File path.
+    :param path: The file path.
     """
     if os.path.exists(path) and not os.path.isdir(path):
         os.remove(path)
-
-
-def remove_files(paths: List[str]) -> None:
-    """
-    Remove multiple files.
-
-    :param paths: List of file paths.
-    """
-    for path in paths:
-        remove_file(path)
 
 
 def read(path: str, binary=False, encoding: Optional[Encoding] = None) -> str:
     """
     Read the contents of a file.
 
-    :param path: File path.
+    :param path: The file path.
     :param binary: Whether to open the file in binary mode.
-    :param encoding: File encoding.
-    :return: Contents of the file.
+    :param encoding: The file encoding.
+    :return: The contents of the file.
     """
     mode = "rb" if binary else "r"
     encoding = encoding and encoding.value
     with open(path, mode, encoding=encoding) as file:
         return file.read()
-
-
-def read_lines(path: str, encoding: Encoding = Encoding.ASCII) -> List[str]:
-    """
-    Read the lines of a file and return them as a list.
-
-    :param path: File path.
-    :param encoding: File encoding.
-    :return: List of lines.
-    """
-    with open(path, "r", encoding=encoding.value) as file:
-        return file.readlines()
 
 
 def write(
@@ -147,10 +101,10 @@ def write(
     """
     Write lines to a file.
 
-    :param path: File path.
-    :param lines: Lines to write (either a string or a list of strings).
+    :param path: The file path.
+    :param lines: The lines to write (either a string or a list of strings).
     :param overwrite: Whether to overwrite the file (default is False).
-    :param encoding: File encoding.
+    :param encoding: The file encoding.
     """
     mode = "w" if overwrite else "a"
     with open(path, mode, encoding=encoding.value) as file:

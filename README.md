@@ -1,15 +1,15 @@
 ## About
 
 The project implements an autonomous password check service based on data provided by [HaveIBeenPwned](https://haveibeenpwned.com/).  
-Though, all data is stored by the service, and thus HaveIBeenPwned is needed only during data updates.  
-The service performs data update in background fully automatic mode, so no pause or restart is needed.  
+However, all data is stored by the service, and thus HaveIBeenPwned is only needed during data updates.  
+The service performs data updates in the background fully automatically, so no pause or restart is needed.  
 
-This app may be used with web interface or via API.  
-Password leak data update may be performed with admin interface or via admin API.  
+This app may be used with a web interface or via API.  
+Password leak data updates may be performed with the admin interface or via the admin API.  
 
-## Quick start
+## Quick Start
 
-Create and activate virtual Python environment somehow like this:
+Create and activate a virtual Python environment using the following commands:
 
 ```commandline
 python -m venv venv
@@ -22,9 +22,9 @@ Install requirements:
 pip install -r requirements.txt
 ```
 
-Create .env file (more info in `devops` package)  
+Create a `.env` file (more info in the `devops` package).  
 
-Run the app somehow like this:
+Run the app using the following command:
 
 ```commandline
 uvicorn main:app --reload --env-file devops/.env
@@ -32,12 +32,12 @@ uvicorn main:app --reload --env-file devops/.env
 
 ## Usage
 
-Client web page is located by relative path "/".  
-Admin web page is located by relative path "/admin".  
+The client web page is located at the relative path "/".  
+The admin web page is located at the relative path "/admin".  
 
-API documentation web page is located by relative path "/docs".  
+API documentation web page is located at the relative path "/docs".  
 
-## Implementation details
+## Implementation Details
 
-The data from HaveIBeenPwned is stored with storage implemented in `storage` package (more info there).  
-This storage is fully async, as well as the application made with FastAPI.  
+The data from HaveIBeenPwned is stored with storage implemented in the `storage` package (more info there).  
+This storage is fully asynchronous, as well as the application made with FastAPI.  

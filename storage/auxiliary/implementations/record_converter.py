@@ -13,7 +13,7 @@ class PwnedRecordConverter:
         :param numeric_type: The numeric type used for storing integer values.
         """
         self.__dropped_prefix_length: int = dropped_prefix_length
-        self.__has_stored_suffix_odd_length: int = (
+        self.__has_stored_suffix_odd_length: bool = (
             SHA1_HASH_LENGTH - dropped_prefix_length
         ) % 2 != 0
         self.__numeric_byte_length: int = numeric_type.byte_length
@@ -26,7 +26,7 @@ class PwnedRecordConverter:
     @property
     def dropped_prefix_length(self) -> int:
         """
-        Get the length of the prefix to drop when converting string records to bytes.
+        Get the length of the prefix that is dropped when converting string records to bytes.
         :return: The length of the dropped prefix.
         """
         return self.__dropped_prefix_length
@@ -43,7 +43,7 @@ class PwnedRecordConverter:
         """
         Convert a string Pwned password leak record to bytes.
 
-        :param record_row: The string record.
+        :param record_row: A string record.
         :param record_prefix: The prefix of the record.
         :return: The record converted to bytes.
         """
@@ -63,7 +63,7 @@ class PwnedRecordConverter:
         Convert bytes back to a Pwned password leak string record.
 
         :param record_bytes: The bytes representing the record.
-        :param dropped_prefix: The dropped before conversion to bytes prefix.
+        :param dropped_prefix: The dropped prefix before conversion.
         :return: The reconstructed Pwned password leak string record.
         """
         hash_bytes = record_bytes[: self.__stored_suffix_size]
@@ -80,7 +80,6 @@ class PwnedRecordConverter:
 
         :param full_desired_prefix: The full desired prefix to check.
         :return: True if the full desired stored prefix has an odd length, False otherwise.
-        :rtype: bool
         """
         return (len(full_desired_prefix) - self.__dropped_prefix_length) % 2 != 0
 

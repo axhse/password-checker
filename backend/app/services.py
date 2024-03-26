@@ -44,6 +44,10 @@ class Services:
 
 
 def build_pwned_storage() -> PwnedStorage:
+    """
+    Build a Pwned storage instance.
+    :return: A PwnedStorage instance.
+    """
     user_agent = EnvVar.Storage.USER_AGENT.get()
     is_mocked = EnvVar.Storage.IS_MOCKED.get_or_default(False)
     requester = (

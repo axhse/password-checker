@@ -6,15 +6,28 @@ class RevisionStatus(Enum):
     """Update status."""
 
     NEW = "new"
+    """No update has been performed for the instance of storage."""
 
     PREPARATION = "preparation"
+    """New data is being prepared."""
+
     TRANSITION = "transition"
+    """Transition to the new data is being performed."""
+
     PURGE = "purge"
+    """Removal of the old data is being performed."""
+
     CANCELLATION = "cancellation"
+    """New data preparation is being cancelling."""
 
     COMPLETED = "completed"
+    """The update has completed successfully."""
+
     FAILED = "failed"
+    """The update has failed."""
+
     CANCELLED = "cancelled"
+    """New data preparation has cancelled."""
 
 
 class Revision:

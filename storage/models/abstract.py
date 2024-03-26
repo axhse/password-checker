@@ -8,23 +8,36 @@ class UpdateResult(Enum):
     """Possible result of an update."""
 
     DONE = "done"
+    """The update has completed successfully."""
+
     CANCELLED = "cancelled"
+    """The update has cancelled."""
+
     FAILED = "failed"
+    """The update has failed."""
+
     BUSY = "busy"
+    """There is already an ongoing update."""
 
 
 class UpdateResponse(Enum):
     """Possible response when requesting an update."""
 
     STARTED = "started"
+    """The update has started."""
+
     BUSY = "busy"
+    """There is already an ongoing update."""
 
 
 class UpdateCancellationResponse(Enum):
     """Possible response when requesting an update cancellation."""
 
     ACCEPTED = "accepted"
+    """The cancellation has started."""
+
     IRRELEVANT = "irrelevant"
+    """There is no ongoing data preparation."""
 
 
 class PwnedStorage(ABC):

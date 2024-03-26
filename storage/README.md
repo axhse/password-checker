@@ -1,15 +1,14 @@
 ## About
 
-The package implements a file storage for password leak records provided by [HaveIBeenPwned](https://haveibeenpwned.com/).  
+The package implements file storage for password leak records provided by [HaveIBeenPwned](https://haveibeenpwned.com/).  
 There are two implementations available:
-1. `TextPwnedStorage` - stores ranges in 1048576 separated by prefix text files
-2. `BinaryPwnedStorage` - stores records in optimized by memory binary format
 
-`BinaryPwnedStorage` uses 40-50% less memory compared to `TextPwnedStorage`, but updates about 10-20% slower
+1. `TextPwnedStorage` - stores ranges in files separated by prefix text files (with each file containing ranges within a span of 1048576).
+2. `BinaryPwnedStorage` - stores records in an optimized binary format, resulting in 40-50% less memory usage compared to `TextPwnedStorage`, albeit with updates about 10-20% slower.
 
 ## Usage
 
-Binary storage creation:
+Creating a binary storage instance:
 ```python
 from storage.models.settings import (
     NumericType,
@@ -24,13 +23,13 @@ settings = BinaryPwnedStorageSettings(StorageFileQuantity.N_65536, occasion_nume
 storage = BinaryPwnedStorage("/tmp/pwned-storage", requester, 64, settings=settings)
 ```
 In this example:
-1. Storage resources will be located in ***/tmp/pwned-storage***
-2. User agent for Pwned API is `"password-checker"`
-3. 64 coroutines will be used during revision
-4. Password leak data will be stored in 65536 files
-5. Leak occasions will be stored as 4-byte (integer) unsigned number (potential occasion values more than 4294967295 will be replaced with 4294967295)
+1. Storage resources will be located in ***/tmp/pwned-storage***.
+2. The user agent for the Pwned API is set to `"password-checker"`.
+3. 64 coroutines will be used during revision.
+4. Password leak data will be stored in 65536 files.
+5. Leak occasions will be stored as 4-byte (integer) unsigned numbers (with potential occasion values greater than 4294967295 being replaced with 4294967295).
 
-Request asynchronous update in background:
+Request asynchronous update in the background:
 ```python
 response = storage.request_update()
 ```
@@ -40,13 +39,13 @@ Request update cancellation:
 response = storage.request_update_cancellation()
 ```
 
-Update asynchronously:
+Asynchronously update:
 ```python
 async def update_storage(storage):
     return await storage.update()
 ```
 
-Get information of the latest update:
+Get information on the latest update:
 ```python
 revision = storage.revision
 ```
@@ -57,11 +56,11 @@ async def get_records(storage):
     return await storage.get_range("FADED")
 ```
 
-For testing purposes mocked version of Pwned requester may be used. It returns fictive data but performs requests much faster.
+For testing purposes, a mocked version of the Pwned requester may be used. It returns fictive data but performs requests much faster.
 
-## Package structure
+## Package Structure
 
-Sub-packages:  
- - **`models`** - contains some common models.
- - **`implementations`** - contains various storage and range provider implementations.
- - **`auxiliary`** - contains only auxiliary components and is considered not to be used directly at all.
+Sub-packages:
+- **`models`** - contains some common models.
+- **`implementations`** - contains various storage and range provider implementations.
+- **`auxiliary`** - contains only auxiliary components and is not intended to be used directly.

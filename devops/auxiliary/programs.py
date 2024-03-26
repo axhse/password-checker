@@ -21,7 +21,7 @@ async def update_storage(
     file_quantity: StorageFileQuantity,
     occasion_numeric_type: NumericType,
 ) -> None:
-    """Update the Pwned storage."""
+    """Update Pwned storage."""
     settings = BinaryPwnedStorageSettings(file_quantity, occasion_numeric_type)
     requester = (
         MockedPwnedRequester(user_agent)

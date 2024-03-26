@@ -8,6 +8,10 @@ from backend.app.environment import EnvVar
 
 
 def create_app() -> FastAPI:
+    """
+    Create a FastAPI application.
+    :return: An application.
+    """
     app = FastAPI(openapi_url=None, docs_url=None, redoc_url=None)
     if EnvVar.App.HTTPS_ONLY.get():
         app.add_middleware(HTTPSRedirectMiddleware)

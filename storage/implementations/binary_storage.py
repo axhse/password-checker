@@ -25,8 +25,8 @@ class BinaryPwnedStorage(PwnedStorageBase):
         Initialize a new BinaryPwnedStorage instance.
 
         :param resource_dir: The directory path for storing resources.
-        :param range_provider: The instance of Pwned range provider.
-        :param revision_coroutine_quantity: The number of coroutines to be used for requesting hashed during revision.
+        :param range_provider: The instance of the Pwned range provider.
+        :param revision_coroutine_quantity: The number of coroutines to be used for requesting hashes during revision.
         :param settings: The settings for the binary storage.
         """
         self.__settings: BinaryPwnedStorageSettings = settings

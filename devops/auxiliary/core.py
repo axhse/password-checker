@@ -7,11 +7,12 @@ from typing import List, Union
 from storage.models.abstract import PwnedStorage
 from storage.models.revision import Revision, RevisionStatus
 
-CONSOLE_UPDATE_INTERVAL_IN_SECONDS: float = 1
+CONSOLE_UPDATE_INTERVAL: float = 1
+"""The interval between console updates in seconds."""
 
 
 class TextStyle(Enum):
-    """Console text style."""
+    """Text styles for the console."""
 
     NONE = 0
     BOLD = 1
@@ -35,8 +36,8 @@ class TextStyle(Enum):
     @property
     def pale(self):
         """
-        Get the pale version of the text style.
-        :return: The pale version of the text style.
+        Get a paler version of the text style.
+        :return: A pale version of the text style.
         """
         if self.value < TextStyle.RED.value or TextStyle.CYAN.value < self.value:
             return self
@@ -45,8 +46,8 @@ class TextStyle(Enum):
     @property
     def bright(self):
         """
-        Get the bright version of the text style.
-        :return: The bright version of the text style.
+        Get a brighter version of the text style.
+        :return: A bright version of the text style.
         """
         if (
             self.value < TextStyle.PALE_RED.value
@@ -62,7 +63,7 @@ def stylize_text(text: str, styles: Union[TextStyle, List[TextStyle]]) -> str:
 
     :param text: The text to stylize.
     :param styles: A single style or a list of styles to apply.
-    :return: The stylized text.
+    :return: A stylized text.
     """
     if isinstance(styles, TextStyle):
         styles = [styles]
@@ -71,7 +72,7 @@ def stylize_text(text: str, styles: Union[TextStyle, List[TextStyle]]) -> str:
 
 def write(text: str) -> None:
     """
-    Write the provided text to the standard output.
+    Write the provided text to standard output.
     :param text: The text to write.
     """
     sys.stdout.write(text)
@@ -80,10 +81,10 @@ def write(text: str) -> None:
 
 def convert_seconds(seconds: int) -> str:
     """
-    Convert the amount of seconds to a formatted time string.
+    Convert the number of seconds to a formatted time string.
 
-    :param seconds: The amount seconds to convert.
-    :return: The formatted time string.
+    :param seconds: An integer representing the number of seconds to convert.
+    :return: A formatted time string.
     """
     hours = seconds // 3600
     minutes = (seconds // 60) % 60
@@ -99,7 +100,7 @@ def print_revision_information(
     """
     Print information related to a revision.
 
-    :param revision: The revision.
+    :param revision: A revision.
     :param previous_status: The previous status of the revision.
     """
 
@@ -169,7 +170,7 @@ def print_revision_information(
 async def watch_and_print_revision(storage: PwnedStorage) -> None:
     """
     Watch storage revision and print its information.
-    :param storage: The storage.
+    :param storage: A storage.
     """
     previous_status = RevisionStatus.NEW
     while True:
@@ -182,4 +183,4 @@ async def watch_and_print_revision(storage: PwnedStorage) -> None:
             RevisionStatus.FAILED,
         ]:
             break
-        await asyncio.sleep(CONSOLE_UPDATE_INTERVAL_IN_SECONDS)
+        await asyncio.sleep(CONSOLE_UPDATE_INTERVAL)

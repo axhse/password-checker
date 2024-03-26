@@ -49,7 +49,6 @@ class PwnedStorageState:
     def active_dataset(self, value: Optional[DatasetID]) -> None:
         """
         Set the currently active dataset.
-
         :param value: The dataset to set as active.
         """
         self.__active_dataset = value

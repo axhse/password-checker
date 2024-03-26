@@ -1,4 +1,3 @@
-from enum import Enum, auto
 from typing import BinaryIO
 
 from storage.auxiliary.filetools import join_paths
@@ -8,16 +7,16 @@ from storage.auxiliary.implementations.record_converter import PwnedRecordConver
 class PwnedRecordSearch:
     """Pwned data file search."""
 
-    class Boundary(Enum):
-        LEFT = auto()
-        RIGHT = auto()
-
     def __init__(self, pwned_converter: PwnedRecordConverter):
+        """
+        Initialize a new PwnedRecordSearch instance.
+        :param pwned_converter: A Pwned password leak record converter.
+        """
         self.__converter: PwnedRecordConverter = pwned_converter
 
     def get_range(self, hash_prefix: str, active_dataset_dir: str) -> str:
         """
-        Retrieve the Pwned password leak record range from file for a hash prefix.
+        Retrieve the Pwned password leak record range from the file for a hash prefix.
 
         :param hash_prefix: The hash prefix.
         :param active_dataset_dir: The directory path for the currently used dataset.
@@ -34,14 +33,14 @@ class PwnedRecordSearch:
                 desired_stored_bytes,
                 has_desired_stored_prefix_odd_length,
                 data_file,
-                PwnedRecordSearch.Boundary.LEFT,
+                is_left_boundary=True,
             )
             right_index = self.__find_boundary(
                 desired_stored_bytes,
                 has_desired_stored_prefix_odd_length,
                 data_file,
-                PwnedRecordSearch.Boundary.RIGHT,
-                left_index,
+                is_left_boundary=False,
+                left_offset=left_index,
             )
             return self.__load_range(left_index, right_index, file_code, data_file)
 
@@ -62,7 +61,7 @@ class PwnedRecordSearch:
         desired_stored_bytes: bytes,
         has_desired_stored_prefix_odd_length: bool,
         file: BinaryIO,
-        boundary: Boundary,
+        is_left_boundary: bool,
         left_offset: int = 0,
     ) -> int:
         record_size = self.__converter.record_size
@@ -86,7 +85,7 @@ class PwnedRecordSearch:
                 beginning_bytes[-1] = beginning_bytes[-1] >> 4 << 4
             is_left_to_shift = (
                 beginning_bytes < desired_stored_bytes
-                if boundary == boundary.LEFT
+                if is_left_boundary
                 else beginning_bytes <= desired_stored_bytes
             )
             if is_left_to_shift:
