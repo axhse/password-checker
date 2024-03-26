@@ -28,26 +28,14 @@ class DatasetID(Enum):
 class PwnedStorageState:
     """Pwned storage state."""
 
-    def __init__(
-        self, implementation_name: str, active_dataset: Optional[DatasetID] = None
-    ):
+    def __init__(self, active_dataset: Optional[DatasetID] = None):
         """
         Initialize a new PwnedStorageState instance.
-        :param implementation_name: The implementation name.
         :param active_dataset: The currently active dataset.
         """
-        self.__implementation_name: str = implementation_name
         self.__active_dataset: Optional[DatasetID] = active_dataset
         self.__is_to_be_ignored: bool = False
         self.__active_requests: int = 0
-
-    @property
-    def implementation_name(self) -> str:
-        """
-        Get the implementation name.
-        :return: The implementation name.
-        """
-        return self.__implementation_name
 
     @property
     def active_dataset(self) -> Optional[DatasetID]:
@@ -104,4 +92,3 @@ class StoredStateKeys:
 
     ACTIVE_DATASET = "dataset"
     IGNORE_STATE_IN_FILE = "ignore"
-    IMPLEMENTATION_NAME = "implementation"

@@ -2,6 +2,7 @@ import asyncio
 import json
 from abc import abstractmethod
 from json import JSONDecodeError
+from typing import Dict
 
 from storage.auxiliary.filetools import (
     is_file,
@@ -10,6 +11,7 @@ from storage.auxiliary.filetools import (
     make_empty_dir,
     read,
     remove_dir,
+    remove_file,
     write,
 )
 from storage.auxiliary.models.functional_revision import FunctionalRevision
@@ -30,6 +32,8 @@ class PwnedStorageBase(PwnedStorage):
     DEFAULT_REVISION_COROUTINE_QUANTITY: int = 64
     STATE_WAIT_TIME_SECONDS: float = 0.5
     STATE_FILE: str = "state.json"
+    IMPLEMENTATION_FILE: str = "implementation.json"
+    IMPLEMENTATION_NAME_KEY: str = "name"
     DEFAULT_DATASET: DatasetID = DatasetID.A
 
     def __init__(
@@ -47,10 +51,13 @@ class PwnedStorageBase(PwnedStorage):
         """
         self.__resource_dir: str = resource_dir
         self.__state_file_path: str = join_paths(resource_dir, self.STATE_FILE)
+        self.__implementation_file_path: str = join_paths(
+            resource_dir, self.IMPLEMENTATION_FILE
+        )
         self._range_provider: PwnedRangeProvider = range_provider
         self._revision: FunctionalRevision = FunctionalRevision()
         self._revision_coroutine_quantity: int = revision_coroutine_quantity
-        self.__state: PwnedStorageState = PwnedStorageState(self.__class_name)
+        self.__state: PwnedStorageState = PwnedStorageState()
         self.__initialize()
 
     @property
@@ -117,6 +124,10 @@ class PwnedStorageBase(PwnedStorage):
     @staticmethod
     async def __wait_a_little() -> None:
         await asyncio.sleep(PwnedStorageBase.STATE_WAIT_TIME_SECONDS)
+
+    @abstractmethod
+    def _get_setting_dict(self) -> Dict:
+        pass
 
     @abstractmethod
     def _get_range(self, prefix) -> str:
@@ -187,12 +198,36 @@ class PwnedStorageBase(PwnedStorage):
 
     def __dump_state(self) -> None:
         state = dict()
-        state[StoredStateKeys.IMPLEMENTATION_NAME] = self.__state.implementation_name
         if self.__state.active_dataset is not None:
             state[StoredStateKeys.ACTIVE_DATASET] = self.__state.active_dataset.value
         if self.__state.is_to_be_ignored:
             state[StoredStateKeys.IGNORE_STATE_IN_FILE] = self.__state.is_to_be_ignored
         write(self.__state_file_path, json.dumps(state), overwrite=True)
+
+    def __dump_implementation_info(self) -> None:
+        info = self._get_setting_dict()
+        info[self.IMPLEMENTATION_NAME_KEY] = self.__class_name
+        write(self.__implementation_file_path, json.dumps(info), overwrite=True)
+
+    def __remove_state_file_if_is_not_relevant(self) -> None:
+        if not is_file(self.__implementation_file_path):
+            self.__dump_implementation_info()
+            return
+        try:
+            implementation_info = json.loads(read(self.__implementation_file_path))
+        except JSONDecodeError:
+            return
+        if not isinstance(implementation_info, dict):
+            return
+        if implementation_info.get(
+            self.IMPLEMENTATION_NAME_KEY
+        ) == self.__class_name and all(
+            implementation_info.get(key) == value
+            for key, value in self._get_setting_dict().items()
+        ):
+            return
+        remove_file(self.__state_file_path)
+        self.__dump_implementation_info()
 
     def __import_state_from_file(self) -> None:
         if not is_file(self.__state_file_path):
@@ -208,11 +243,6 @@ class PwnedStorageBase(PwnedStorage):
             and state[StoredStateKeys.IGNORE_STATE_IN_FILE]
         ):
             return
-        if (
-            StoredStateKeys.IMPLEMENTATION_NAME not in state
-            or self.__class_name != state[StoredStateKeys.IMPLEMENTATION_NAME]
-        ):
-            return
         if StoredStateKeys.ACTIVE_DATASET in state:
             for dataset in DatasetID:
                 if dataset.value == state[StoredStateKeys.ACTIVE_DATASET]:
@@ -220,4 +250,5 @@ class PwnedStorageBase(PwnedStorage):
 
     def __initialize(self) -> None:
         make_dir_if_not_exists(self.__resource_dir)
+        self.__remove_state_file_if_is_not_relevant()
         self.__import_state_from_file()

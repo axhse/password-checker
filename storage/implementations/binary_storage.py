@@ -1,3 +1,5 @@
+from typing import Dict
+
 from storage.auxiliary.filetools import join_paths
 from storage.auxiliary.implementations.record_converter import PwnedRecordConverter
 from storage.auxiliary.implementations.record_search import PwnedRecordSearch
@@ -27,8 +29,8 @@ class BinaryPwnedStorage(PwnedStorageBase):
         :param revision_coroutine_quantity: The number of coroutines to be used for requesting hashed during revision.
         :param settings: The settings for the binary storage.
         """
-        super().__init__(resource_dir, range_provider, revision_coroutine_quantity)
         self.__settings: BinaryPwnedStorageSettings = settings
+        super().__init__(resource_dir, range_provider, revision_coroutine_quantity)
         self.__pwned_converter: PwnedRecordConverter = PwnedRecordConverter(
             settings.file_code_length,
             settings.occasion_numeric_type,
@@ -36,6 +38,9 @@ class BinaryPwnedStorage(PwnedStorageBase):
         self.__record_search: PwnedRecordSearch = PwnedRecordSearch(
             self.__pwned_converter
         )
+
+    def _get_setting_dict(self) -> Dict:
+        return self.__settings.to_dict()
 
     def _get_range(self, prefix) -> str:
         return self.__record_search.get_range(prefix, self._active_dataset_dir)

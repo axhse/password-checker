@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Dict
 
 
 class StorageFileQuantity(Enum):
@@ -88,6 +89,16 @@ class BinaryPwnedStorageSettings:
         :return: The length of data file codes.
         """
         return self.__file_code_length
+
+    def to_dict(self) -> Dict:
+        """
+        Convert settings to dictionary.
+        :return: Settings as a dictionary.
+        """
+        return {
+            "file_quantity": self.file_quantity,
+            "numeric_bytes": self.occasion_numeric_type.byte_length,
+        }
 
     def __calculate_file_code_length(self) -> int:
         code_length = 0

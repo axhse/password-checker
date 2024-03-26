@@ -1,3 +1,5 @@
+from typing import Dict
+
 from storage.auxiliary.filetools import join_paths, read, write
 from storage.auxiliary.models.state import DatasetID
 from storage.auxiliary.numeration import number_to_hex_code
@@ -18,6 +20,9 @@ class TextPwnedStorage(PwnedStorageBase):
         if len(prefix) != 5:
             raise ValueError("The hash prefix must have a length of 5 symbols.")
         return prefix
+
+    def _get_setting_dict(self) -> Dict:
+        return dict()
 
     def _get_range(self, prefix) -> str:
         return read(join_paths(self._active_dataset_dir, f"{prefix}.txt"))
