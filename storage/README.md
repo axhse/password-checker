@@ -2,8 +2,10 @@
 
 The package implements a file storage for password leak records provided by [HaveIBeenPwned](https://haveibeenpwned.com/).  
 There are two implementations available:
-1. `TextPwnedStorage` - stores ranges in separate text files for each prefix
-2. `BinaryPwnedStorage` - stores records in optimized by memory binary format, but prepares its data slower during revision
+1. `TextPwnedStorage` - stores ranges in 1048576 separated by prefix text files
+2. `BinaryPwnedStorage` - stores records in optimized by memory binary format
+
+`BinaryPwnedStorage` uses 40-50% less memory compared to `TextPwnedStorage`, but updates about 10-20% slower
 
 ## Usage
 
@@ -23,8 +25,8 @@ storage = BinaryPwnedStorage("/tmp/pwned-storage", requester, 64, settings=setti
 ```
 In this example:
 1. Storage resources will be located in ***/tmp/pwned-storage***
-2. User agent value of the requester will be `"password-checker"`
-3. 64 coroutines will be used for revision
+2. User agent for Pwned API is `"password-checker"`
+3. 64 coroutines will be used during revision
 4. Password leak data will be stored in 65536 files
 5. Leak occasions will be stored as 4-byte (integer) unsigned number (potential occasion values more than 4294967295 will be replaced with 4294967295)
 

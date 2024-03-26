@@ -1,17 +1,17 @@
 ## About
 
-The package implements dev-ops command line programs.
+The package contains dev-ops-related entities.
 
-## Programs
+## Console programs
 
-Make sure the venv is activated.
+Make sure the venv is activated before running any program.
 
 An example of the activation from the command line (may differ in your case):
 ```commandline
 source venv/Scripts/activate
 ```
 
-To get detailed argument descriptions for the programs run them with flag `-h` or `--help`.
+To get argument descriptions of any program run it with flag `-h` or `--help`.
 
 ### update_storage
 
@@ -19,18 +19,19 @@ Updates the storage.
 
 Usage:
 ```commandline
-py -m devops.update_storage "/tmp/pwned-storage" "password-checker" -c 64 -m -f 65536 -b 4
+py -m devops.update_storage "/tmp/pwned-storage" "password-checker" -c 64 -f 65536 -b 4
 ```
 In this example:
 1. Storage resources will be located in ***/tmp/pwned-storage***
-2. 64 coroutines will be used for revision
-3. The mocked requester will be used
+2. User agent for Pwned API is `"password-checker"`
+3. 64 coroutines will be used during revision
 4. The binary implementation of storage will be used
 5. Password leak data will be stored in 65536 files
 6. Leak occasions will be stored as 4-byte (integer) unsigned numbers
 
-## Environment variables
+Important: This program must not be run when specified resource directory is already in use by other program or application.
 
+## Environment variables
 
 It's necessary to define environment variables when starting FastAPI application.  
 The best way to do this is to create an .env file and then to specify it via command line argument when starting the application:  
