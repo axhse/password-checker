@@ -9,6 +9,8 @@ from backend.app import dependencies
 from backend.app.services import Services
 
 router = APIRouter(prefix="/admin")
+INTERFACE_TAG = "Admin Interface"
+API_TAG = "Admin API"
 
 
 def require_admin_session(request: Request) -> None:
@@ -16,8 +18,8 @@ def require_admin_session(request: Request) -> None:
         raise HTTPException(status_code=401, detail="Not authorized")
 
 
-@router.get("/")
-async def get_admin_page(
+@router.get("/", tags=[INTERFACE_TAG])
+async def get_main_page(
     request: Request,
     templates: Jinja2Templates = Depends(dependencies.templates),
     services: Services = Depends(dependencies.services),
@@ -28,65 +30,20 @@ async def get_admin_page(
     return templates.TemplateResponse("admin/admin.html", {"request": request})
 
 
-@router.get("/revision")
-async def get_revision_info(
-    request: Request,
-    services: Services = Depends(dependencies.services),
-) -> Response:
-    require_admin_session(request)
-
-    revision = services.storage.revision
-    response_content = {
-        "status": revision.status.value,
-        "start_ts": revision.start_ts,
-        "end_ts": revision.end_ts,
-        "progress": revision.progress,
-        "error_message": revision.error and str(revision.error),
-    }
-    for key in list(response_content.keys()):
-        if response_content[key] is None:
-            response_content.pop(key)
-    return JSONResponse(content=response_content)
-
-
-@router.post("/revision/start")
-async def request_storage_update(
-    request: Request,
-    services: Services = Depends(dependencies.services),
-) -> Response:
-    require_admin_session(request)
-
-    response_content = {"response": services.storage.request_update().value}
-    return JSONResponse(content=response_content)
-
-
-@router.post("/revision/cancel")
-async def request_storage_update_cancellation(
-    request: Request,
-    services: Services = Depends(dependencies.services),
-) -> Response:
-    require_admin_session(request)
-
-    response_content = {
-        "response": services.storage.request_update_cancellation().value
-    }
-    return JSONResponse(content=response_content)
-
-
-@router.get("/login")
+@router.get("/login", tags=[INTERFACE_TAG])
 async def get_login_page(
     request: Request,
     services: Services = Depends(dependencies.services),
     templates: Jinja2Templates = Depends(dependencies.templates),
 ) -> Response:
     if services.auth.has_admin_session(request):
-        return RedirectResponse(router.url_path_for(get_admin_page.__name__), 303)
+        return RedirectResponse(router.url_path_for(get_main_page.__name__), 303)
     return templates.TemplateResponse(
         "admin/login.html", {"request": request, "is_warning_hidden": True}
     )
 
 
-@router.post("/login")
+@router.post("/login", tags=[INTERFACE_TAG])
 async def post_login_form(
     request: Request,
     password: str = Form(default=""),
@@ -97,16 +54,16 @@ async def post_login_form(
         return templates.TemplateResponse(
             "admin/login.html", {"request": request, "is_warning_hidden": False}
         )
-    response = RedirectResponse(router.url_path_for(get_admin_page.__name__), 303)
+    response = RedirectResponse(router.url_path_for(get_main_page.__name__), 303)
     services.auth.set_admin_session(response)
     return response
 
 
-@router.post("/auth")
+@router.post("/auth", tags=[API_TAG], response_class=JSONResponse)
 async def authenticate(
     request: Request,
     services: Services = Depends(dependencies.services),
-) -> Response:
+) -> JSONResponse:
     try:
         body_json = await request.json()
     except (ValidationError, JSONDecodeError):
@@ -126,3 +83,48 @@ async def authenticate(
         raise HTTPException(status_code=401, detail="Incorrect password")
     response_content = {"token": services.auth.create_admin_session_token()}
     return JSONResponse(response_content)
+
+
+@router.get("/revision", tags=[API_TAG], response_class=JSONResponse)
+async def get_revision_info(
+    request: Request,
+    services: Services = Depends(dependencies.services),
+) -> JSONResponse:
+    require_admin_session(request)
+
+    revision = services.storage.revision
+    response_content = {
+        "status": revision.status.value,
+        "start_ts": revision.start_ts,
+        "end_ts": revision.end_ts,
+        "progress": revision.progress,
+        "error_message": revision.error and str(revision.error),
+    }
+    for key in list(response_content.keys()):
+        if response_content[key] is None:
+            response_content.pop(key)
+    return JSONResponse(content=response_content)
+
+
+@router.post("/revision/start", tags=[API_TAG], response_class=JSONResponse)
+async def request_storage_update(
+    request: Request,
+    services: Services = Depends(dependencies.services),
+) -> JSONResponse:
+    require_admin_session(request)
+
+    response_content = {"response": services.storage.request_update().value}
+    return JSONResponse(content=response_content)
+
+
+@router.post("/revision/cancel", tags=[API_TAG], response_class=JSONResponse)
+async def request_storage_update_cancellation(
+    request: Request,
+    services: Services = Depends(dependencies.services),
+) -> JSONResponse:
+    require_admin_session(request)
+
+    response_content = {
+        "response": services.storage.request_update_cancellation().value
+    }
+    return JSONResponse(content=response_content)

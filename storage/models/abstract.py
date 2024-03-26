@@ -14,14 +14,14 @@ class UpdateResult(Enum):
 
 
 class UpdateResponse(Enum):
-    """Possible response status when requesting an update."""
+    """Possible response when requesting an update."""
 
     STARTED = "started"
     BUSY = "busy"
 
 
 class UpdateCancellationResponse(Enum):
-    """Possible response status when requesting an update cancellation."""
+    """Possible response when requesting an update cancellation."""
 
     ACCEPTED = "accepted"
     IRRELEVANT = "irrelevant"

@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 
-from backend.api.endpoints import admin, client
+from backend.api.endpoints import admin, client, docs
 
 router = APIRouter()
-router.include_router(client.router, tags=["client"])
-router.include_router(admin.router, tags=["admin"])
+router.include_router(docs.router)
+router.include_router(client.router)
+router.include_router(admin.router)

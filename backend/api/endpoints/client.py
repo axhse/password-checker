@@ -2,7 +2,7 @@ from json import JSONDecodeError
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import ValidationError
-from starlette.responses import JSONResponse, PlainTextResponse, Response
+from starlette.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from starlette.templating import Jinja2Templates
 
 from backend.app import dependencies
@@ -11,17 +11,17 @@ from backend.app.services import Services
 router = APIRouter()
 
 
-@router.get("/")
-async def get_client_page(
+@router.get("/", tags=["Client interface"], response_class=HTMLResponse)
+async def get_main_page(
     request: Request, templates: Jinja2Templates = Depends(dependencies.templates)
-) -> Response:
+) -> HTMLResponse:
     return templates.TemplateResponse("client/client.html", {"request": request})
 
 
-@router.get("/range/{prefix}")
+@router.get("/range/{prefix}", tags=["Client API"], response_class=PlainTextResponse)
 async def get_range(
     prefix: str, services: Services = Depends(dependencies.services)
-) -> Response:
+) -> PlainTextResponse:
     try:
         records = await services.storage.get_range(prefix)
         return PlainTextResponse(records, status_code=200)
@@ -29,10 +29,10 @@ async def get_range(
         return PlainTextResponse(str(error), status_code=400)
 
 
-@router.post("/strength")
+@router.post("/strength", tags=["Client API"], response_class=JSONResponse)
 async def check_strength(
     request: Request, services: Services = Depends(dependencies.services)
-) -> Response:
+) -> JSONResponse:
     try:
         body_json = await request.json()
     except (ValidationError, JSONDecodeError):

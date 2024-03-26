@@ -30,6 +30,13 @@ Run the app somehow like this:
 uvicorn main:app --reload --env-file devops/.env
 ```
 
+## Usage
+
+Client web page is located by relative path "/".  
+Admin web page is located by relative path "/admin".  
+
+API documentation web page is located by relative path "/docs".  
+
 ## Implementation details
 
 The data from HaveIBeenPwned is stored with storage implemented in `storage` package (more info there).  
