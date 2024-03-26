@@ -129,6 +129,7 @@ async function requestUpdateCancellation() {
 
 async function initializePage() {
     await updateRevisionInfo();
+    document.getElementById('div-revision').hidden = false;
     setInterval(async () => {
         await updateRevisionInfo();
     }, pageAutoUpdateInterval);

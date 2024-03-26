@@ -27,16 +27,6 @@
     color: var(--color-error-in-block);
 }
 
-#group-revision-buttons > button {
-    margin: 0px 5px;
-}
-
-#block-revision-info {
-    margin-left: 20%;
-    margin-right: 20%;
-    color: var(--color-text-revision-info);
-}
-
 #form-password input {
     width: 40%;
 }
@@ -44,4 +34,30 @@
 #password-warning {
     margin-top: 10px;
     color: var(--color-error);
+}
+
+#group-revision-buttons > button {
+    margin: 0px 5px;
+}
+
+#block-revision-info {
+    margin-top: 30px;
+    margin-left: 20%;
+    margin-right: 20%;
+    padding: 30px 20px;
+    color: var(--color-text-revision-info);
+}
+
+#button-update-revision-info {
+    position: absolute;
+    right: calc(20% - 5px);
+    z-index: 1;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: -5px;
+}
+
+#button-update-revision-info > img {
+    width: 20px;
+    height: 20px;
 }

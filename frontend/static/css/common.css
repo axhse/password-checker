@@ -51,6 +51,11 @@ input:focus::placeholder {
     color: transparent;
 }
 
+h1, h2 {
+    margin-left: 3%;
+    margin-right: 3%;
+}
+
 .gap-5vh {
     height: 5vh;
 }

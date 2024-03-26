@@ -29,7 +29,12 @@
     </div>
     <div class="gap-10vh"></div>
     <h2>Информация о последнем обновлении</h2>
-    <div id="block-revision-info" class="block"></div>
+    <div id="div-revision" hidden>
+      <button id="button-update-revision-info" onclick="updateRevisionInfo()">
+        <img src="/static/img/icon-reload.svg" />
+      </button>
+      <div id="block-revision-info" class="block"></div>
+    </div>
     <div class="gap-20vh"></div>
   </body>
   <script>
