@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Tuple
+from typing import List
 
 from storage.auxiliary import hasher
 from storage.implementations.requester import PwnedRequester
@@ -10,11 +10,10 @@ class MockedPwnedRequester(PwnedRequester):
     """Mocked Pwned API client."""
 
     RECORD_QUANTITY: int = 1009
-    INCLUDED_PASSWORDS: List[Tuple[str, int]] = [
-        ("hello", 273646),
-        ("hello1234567890", 10),
-        ("superstronger", 1),
-        ("123_56789", 3),
+    INCLUDED_PASSWORDS: List[str] = [
+        "hello",
+        "hello12345",
+        "123_56789",
     ]
 
     def __init__(self, user_agent: str):
@@ -29,23 +28,18 @@ class MockedPwnedRequester(PwnedRequester):
             for index in range(self.RECORD_QUANTITY)
         ]
         self.__records.sort()
-        self.__extra_records = dict()
-        for password, occasion_number in self.INCLUDED_PASSWORDS:
-            password_hash = hasher.sha1(password)
-            record = f"{password_hash[5:]}:{occasion_number}"
-            self.__extra_records.setdefault(password_hash[:5], list())
-            self.__extra_records[password_hash[:5]].append(record)
+        self.__required_prefixes = set()
+        self.__required_prefixes.add("00000")
+        for password in self.INCLUDED_PASSWORDS:
+            self.__required_prefixes.add(hasher.sha1(password)[:5])
 
     async def get_range(self, hash_prefix: str) -> str:
         hash_prefix = hash_prefix.upper()
-        if hash_prefix == "00000":
+        if hash_prefix in self.__required_prefixes:
             return await super().get_range(hash_prefix)
         await asyncio.sleep(0)
         num = int(hash_prefix, base=16)
         offset = (num + 3234) % 54347 % (self.RECORD_QUANTITY * 9 // 11 + 1) + 1
         amount = (num + 2832) % 71203 % 8235 % 4 + 1
         records = self.__records[offset : offset + amount]
-        if hash_prefix in self.__extra_records:
-            records.extend(self.__extra_records[hash_prefix])
-            records.sort()
         return "\n".join(records)

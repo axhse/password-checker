@@ -64,15 +64,14 @@ async def test_ranges(
 
 @pytest.mark.asyncio
 async def test_leak_check(updated_storage: PwnedStorage):
-    for password, occasion in MockedPwnedRequester.INCLUDED_PASSWORDS:
+    for password in ["hello", "hello12345"]:
         password_hash = hasher.sha1(password)
-        records1 = (await updated_storage.get_range(password_hash[:5])).split()
-        records2 = (await updated_storage.get_range(password_hash[:6])).split()
-        expected_occasion = min(occasion, NUMERIC_TYPE.max_unsigned_value)
-        expected_record = f"{password_hash[5:]}:{expected_occasion}"
-        assert expected_record in records1
-        assert expected_record in records2
-    for password, occasion in MockedPwnedRequester.INCLUDED_PASSWORDS:
+        records1 = await updated_storage.get_range(password_hash[:5])
+        records2 = await updated_storage.get_range(password_hash[:6])
+        expected_suffix = password_hash[5:]
+        assert expected_suffix in records1
+        assert expected_suffix in records2
+    for password in ["1233492830984234230984", "123_56789"]:
         password += "_"
         password_hash = hasher.sha1(password)
         records1 = await updated_storage.get_range(password_hash[:5])
