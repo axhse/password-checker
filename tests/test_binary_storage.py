@@ -31,7 +31,8 @@ def storage(temp_dir: str, range_provider: PwnedRangeProvider) -> PwnedStorage:
         StorageFileQuantity.N_256,
         NUMERIC_TYPE,
     )
-    return BinaryPwnedStorage(resource_dir, range_provider, 1, settings)
+    coroutines = max(16, 1 + len(MockedPwnedRequester.INCLUDED_PASSWORDS))
+    return BinaryPwnedStorage(resource_dir, range_provider, coroutines, settings)
 
 
 @pytest.fixture(scope="session")
@@ -68,9 +69,9 @@ async def test_leak_check(updated_storage: PwnedStorage):
         password_hash = hasher.sha1(password)
         records1 = await updated_storage.get_range(password_hash[:5])
         records2 = await updated_storage.get_range(password_hash[:6])
-        expected_suffix = password_hash[5:]
-        assert expected_suffix in records1
-        assert expected_suffix in records2
+        expected_line = password_hash[5:] + ":"
+        assert expected_line in records1
+        assert expected_line in records2
     for password in ["1233492830984234230984", "123_56789"]:
         password += "_"
         password_hash = hasher.sha1(password)
