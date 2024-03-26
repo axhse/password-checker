@@ -29,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "user_agent",
         type=str,
-        help="The user agent header value to be used in HTTP requests. "
+        help="The user agent header value to be sent to Pwned API. "
         "More details: https://haveibeenpwned.com/API/v2#UserAgent",
     )
     parser.add_argument(
@@ -39,7 +39,7 @@ if __name__ == "__main__":
         choices=range(1, 1024 + 1),
         metavar="NUMBER",
         default=default_revision_coroutine_quantity,
-        help="The number of coroutines to be used for requesting hashed during revision."
+        help="The number of coroutines for requesting hashes during revision."
         f" Default: {default_revision_coroutine_quantity}.",
     )
     parser.add_argument(
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         type=int,
         choices=STORAGE_FILE_QUANTITY_INT_OPTIONS,
         default=default_file_quantity,
-        help="The number of files (batches) in which the storage stores its data."
+        help="The number of files (batches) to store data (for binary implementation)."
         f" Default: {default_file_quantity}.",
     )
     parser.add_argument(
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         type=int,
         choices=NUMERIC_TYPE_INT_OPTIONS,
         default=default_occasion_byte_number,
-        help="The size of stored leak occasion unsigned number in bytes."
+        help="The size of stored leak occasion unsigned number in bytes (for binary implementation)."
         f" Default: {default_occasion_byte_number}.",
     )
 

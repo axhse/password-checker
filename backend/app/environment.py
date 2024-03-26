@@ -1,49 +1,110 @@
 import os
-from enum import Enum, auto
-from typing import Type, Union
+from abc import ABC, abstractmethod
+from typing import Generic, Optional, TypeVar
+
+TEnvVar = TypeVar("TEnvVar")
 
 
-class EnvKey(Enum):
-    """Environment variable name."""
+class GenericEnvVar(Generic[TEnvVar], ABC):
+    """Generic environment variable."""
 
-    HTTPS_ONLY = auto()
+    def __init__(self, key: str):
+        self.__key = key
 
-    ADMIN_PASSWORD = auto()
-    ADMIN_SESSION_LIFETIME_IN_MINUTES = auto()
+    def get(self) -> TEnvVar:
+        nullable_str_value = self.__get_nullable_str_value()
+        if nullable_str_value is None:
+            raise ValueError(f"Environment variable {self.__key} is not set.")
+        return self._convert_value(nullable_str_value)
 
-    STORAGE_RESOURCE_DIR = auto()
-    STORAGE_USER_AGENT = auto()
-    STORAGE_COROUTINES = auto()
-    STORAGE_FILES = auto()
-    STORAGE_NUMERIC_BYTES = auto()
-    IS_STORAGE_MOCKED = auto()
-    IS_STORAGE_TEXT = auto()
+    def get_nullable(self) -> Optional[TEnvVar]:
+        nullable_str_value = self.__get_nullable_str_value()
+        if nullable_str_value is None:
+            return None
+        return self._convert_value(nullable_str_value)
+
+    def get_or_default(self, default: TEnvVar) -> Optional[TEnvVar]:
+        nullable_str_value = self.__get_nullable_str_value()
+        if nullable_str_value is None:
+            return default
+        return self._convert_value(nullable_str_value)
+
+    @property
+    def _key(self) -> str:
+        return self.__key
+
+    @abstractmethod
+    def _convert_value(self, str_value: str) -> TEnvVar:
+        pass
+
+    def __get_nullable_str_value(self) -> str:
+        return os.environ.get(self.__key)
 
 
-def get_env_value(
-    key: EnvKey,
-    value_type: Union[Type[str], Type[int], Type[bool]],
-    default: Union[None, str, int, bool] = None,
-    nullable: bool = False,
-) -> Union[None, str, int, bool]:
-    """
-    Get the value of environment variable.
+class StrEnvVar(GenericEnvVar[str]):
+    """String environment variable."""
 
-    :param key: The environment variable key.
-    :param value_type: The type of the environment variable value.
-    :param default: The default value to replace None values.
-    :param nullable: Whether the None value is allowed. Default: False.
-    :return: The value.
-    """
-    optional_str_value: str = os.environ.get(key.name)
-    if not nullable and optional_str_value is None and default is None:
-        raise ValueError(f"The required value '{key.name}' is actually 'None'.")
-    if value_type == int:
-        return default if optional_str_value is None else int(optional_str_value)
-    if value_type == bool:
-        return (
-            default
-            if optional_str_value is None
-            else optional_str_value.lower() not in ["false", "0"]
+    def __init__(self, key: str):
+        super().__init__(key)
+
+    def _convert_value(self, str_value: str) -> str:
+        return str_value
+
+
+class IntEnvVar(GenericEnvVar[int]):
+    """Integer environment variable."""
+
+    def __init__(self, key: str):
+        super().__init__(key)
+
+    def _convert_value(self, str_value: str) -> int:
+        return int(str_value)
+
+
+class FloatEnvVar(GenericEnvVar[float]):
+    """Float environment variable."""
+
+    def __init__(self, key: str):
+        super().__init__(key)
+
+    def _convert_value(self, str_value: str) -> float:
+        return float(str_value)
+
+
+class BoolEnvVar(GenericEnvVar[bool]):
+    """Boolean environment variable."""
+
+    STR_VALUES_TRUE = ["TRUE", "True", "true"]
+    STR_VALUES_FALSE = ["FALSE", "False", "false"]
+
+    def __init__(self, key: str):
+        super().__init__(key)
+
+    def _convert_value(self, str_value: str) -> bool:
+        if str_value in self.STR_VALUES_TRUE:
+            return True
+        if str_value in self.STR_VALUES_FALSE:
+            return False
+        raise ValueError(
+            f"Invalid string value '{str_value}' for boolean environment variable {self._key}."
         )
-    return default if optional_str_value is None else optional_str_value
+
+
+class EnvVar:
+    class App:
+        HTTPS_ONLY: BoolEnvVar = BoolEnvVar("HTTPS_ONLY")
+
+    class Admin:
+        SESSION_LIFETIME_IN_MINUTES: IntEnvVar = IntEnvVar(
+            "ADMIN_SESSION_LIFETIME_IN_MINUTES"
+        )
+        PASSWORD: StrEnvVar = StrEnvVar("ADMIN_PASSWORD")
+
+    class Storage:
+        RESOURCE_DIR: StrEnvVar = StrEnvVar("STORAGE_RESOURCE_DIR")
+        USER_AGENT: StrEnvVar = StrEnvVar("STORAGE_USER_AGENT")
+        COROUTINES: IntEnvVar = IntEnvVar("STORAGE_COROUTINES")
+        FILES: IntEnvVar = IntEnvVar("STORAGE_FILES")
+        NUMERIC_BYTES: IntEnvVar = IntEnvVar("STORAGE_NUMERIC_BYTES")
+        IS_MOCKED: BoolEnvVar = BoolEnvVar("IS_STORAGE_MOCKED")
+        IS_TEXT: BoolEnvVar = BoolEnvVar("IS_STORAGE_TEXT")

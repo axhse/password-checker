@@ -1,17 +1,16 @@
 from starlette.templating import Jinja2Templates
 
-from backend.app.service_manager import ServiceManager
-from backend.services.auth import AuthService
+from backend.app.services import Services
 
-service_manager_instance: ServiceManager = ServiceManager()
+services_instance: Services = Services()
 
 
-def service_manager() -> ServiceManager:
+def services() -> Services:
     """
-    Get the service manager.
-    :return: The service manager.
+    Get the services.
+    :return: The services.
     """
-    return service_manager_instance
+    return services_instance
 
 
 templates_instance: Jinja2Templates = Jinja2Templates(directory="frontend/templates")
@@ -23,14 +22,3 @@ def templates() -> Jinja2Templates:
     :return: The Jinja template instance.
     """
     return templates_instance
-
-
-auth_service_instance: AuthService = AuthService()
-
-
-def auth_service() -> AuthService:
-    """
-    Get the auth service instance.
-    :return: The auth service instance.
-    """
-    return auth_service_instance

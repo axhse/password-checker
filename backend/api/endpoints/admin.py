@@ -6,14 +6,13 @@ from starlette.responses import JSONResponse, RedirectResponse, Response
 from starlette.templating import Jinja2Templates
 
 from backend.app import dependencies
-from backend.app.service_manager import ServiceManager
-from backend.services.auth import AuthService
+from backend.app.services import Services
 
 router = APIRouter(prefix="/admin")
 
 
 def require_admin_session(request: Request) -> None:
-    if not dependencies.auth_service().has_admin_session(request):
+    if not dependencies.services().auth.has_admin_session(request):
         raise HTTPException(status_code=401, detail="Not authorized")
 
 
@@ -21,9 +20,9 @@ def require_admin_session(request: Request) -> None:
 async def get_admin_page(
     request: Request,
     templates: Jinja2Templates = Depends(dependencies.templates),
-    auth_service: AuthService = Depends(dependencies.auth_service),
+    services: Services = Depends(dependencies.services),
 ) -> Response:
-    if not auth_service.has_admin_session(request):
+    if not services.auth.has_admin_session(request):
         return RedirectResponse(router.url_path_for(get_login_page.__name__), 308)
 
     return templates.TemplateResponse("admin/admin.html", {"request": request})
@@ -32,7 +31,7 @@ async def get_admin_page(
 @router.get("/revision")
 async def get_revision_info(
     request: Request,
-    services: ServiceManager = Depends(dependencies.service_manager),
+    services: Services = Depends(dependencies.services),
 ) -> Response:
     require_admin_session(request)
 
@@ -53,7 +52,7 @@ async def get_revision_info(
 @router.post("/revision/start")
 async def request_storage_update(
     request: Request,
-    services: ServiceManager = Depends(dependencies.service_manager),
+    services: Services = Depends(dependencies.services),
 ) -> Response:
     require_admin_session(request)
 
@@ -64,7 +63,7 @@ async def request_storage_update(
 @router.post("/revision/cancel")
 async def request_storage_update_cancellation(
     request: Request,
-    services: ServiceManager = Depends(dependencies.service_manager),
+    services: Services = Depends(dependencies.services),
 ) -> Response:
     require_admin_session(request)
 
@@ -77,10 +76,10 @@ async def request_storage_update_cancellation(
 @router.get("/login")
 async def get_login_page(
     request: Request,
-    auth_service: AuthService = Depends(dependencies.auth_service),
+    services: Services = Depends(dependencies.services),
     templates: Jinja2Templates = Depends(dependencies.templates),
 ) -> Response:
-    if auth_service.has_admin_session(request):
+    if services.auth.has_admin_session(request):
         return RedirectResponse(router.url_path_for(get_admin_page.__name__), 303)
     return templates.TemplateResponse(
         "admin/login.html", {"request": request, "is_warning_hidden": True}
@@ -91,22 +90,22 @@ async def get_login_page(
 async def post_login_form(
     request: Request,
     password: str = Form(default=""),
-    auth_service: AuthService = Depends(dependencies.auth_service),
+    services: Services = Depends(dependencies.services),
     templates: Jinja2Templates = Depends(dependencies.templates),
 ) -> Response:
-    if not auth_service.is_admin_password(password):
+    if not services.auth.is_admin_password(password):
         return templates.TemplateResponse(
             "admin/login.html", {"request": request, "is_warning_hidden": False}
         )
     response = RedirectResponse(router.url_path_for(get_admin_page.__name__), 303)
-    auth_service.set_admin_session(response)
+    services.auth.set_admin_session(response)
     return response
 
 
 @router.post("/auth")
 async def authenticate(
     request: Request,
-    auth_service: AuthService = Depends(dependencies.auth_service),
+    services: Services = Depends(dependencies.services),
 ) -> Response:
     try:
         body_json = await request.json()
@@ -123,7 +122,7 @@ async def authenticate(
         raise HTTPException(
             status_code=400, detail="'password' field must be a string."
         )
-    if not auth_service.is_admin_password(password):
+    if not services.auth.is_admin_password(password):
         raise HTTPException(status_code=401, detail="Incorrect password")
-    response_content = {"token": auth_service.create_admin_session_token()}
+    response_content = {"token": services.auth.create_admin_session_token()}
     return JSONResponse(response_content)

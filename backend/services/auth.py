@@ -6,19 +6,23 @@ import jwt
 from starlette.requests import Request
 from starlette.responses import Response
 
-from backend.app.environment import EnvKey, get_env_value
+from backend.app.environment import EnvVar
 
 
 class AuthService:
     SESSION_TOKEN_COOKIE_NAME = "session_token"
+    DEFAULT_ADMIN_SESSION_LIFETIME_IN_MINUTES = 60
 
     def __init__(self):
-        self.__session_secret_key = secrets.token_hex(32)
-        self.__is_https_only = get_env_value(EnvKey.HTTPS_ONLY, bool)
-        self.__admin_session_lifetime: int = 60 * get_env_value(
-            EnvKey.ADMIN_SESSION_LIFETIME_IN_MINUTES, int, default=64
+        self.__session_secret_key: str = secrets.token_hex(32)
+        self.__is_https_only: bool = EnvVar.App.HTTPS_ONLY.get()
+        self.__admin_session_lifetime: int = (
+            60
+            * EnvVar.Admin.SESSION_LIFETIME_IN_MINUTES.get_or_default(
+                self.DEFAULT_ADMIN_SESSION_LIFETIME_IN_MINUTES
+            )
         )
-        admin_password = get_env_value(EnvKey.ADMIN_PASSWORD, str)
+        admin_password: str = EnvVar.Admin.PASSWORD.get()
         self.__encoded_admin_password: str = self.__encode_password(admin_password)
 
     def set_admin_session(self, response: Response) -> None:

@@ -6,7 +6,7 @@ from starlette.responses import JSONResponse, PlainTextResponse, Response
 from starlette.templating import Jinja2Templates
 
 from backend.app import dependencies
-from backend.app.service_manager import ServiceManager
+from backend.app.services import Services
 
 router = APIRouter()
 
@@ -20,7 +20,7 @@ async def get_client_page(
 
 @router.get("/range/{prefix}")
 async def get_range(
-    prefix: str, services: ServiceManager = Depends(dependencies.service_manager)
+    prefix: str, services: Services = Depends(dependencies.services)
 ) -> Response:
     try:
         records = await services.storage.get_range(prefix)
@@ -31,7 +31,7 @@ async def get_range(
 
 @router.post("/strength")
 async def check_strength(
-    request: Request, services: ServiceManager = Depends(dependencies.service_manager)
+    request: Request, services: Services = Depends(dependencies.services)
 ) -> Response:
     try:
         body_json = await request.json()
