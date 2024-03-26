@@ -48,6 +48,10 @@ async def check_strength(
         raise HTTPException(
             status_code=400, detail="'password' field must be a string."
         )
+    if len(password) > 100:
+        raise HTTPException(
+            status_code=400, detail="Password length must be 100 characters or less."
+        )
     result = services.strength_checker.check(password)
     response_content = {
         "strength": result.strength.value,
