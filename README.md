@@ -41,3 +41,15 @@ API documentation web page is located at the relative path "/docs".
 
 The data from HaveIBeenPwned is stored with storage implemented in the `storage` package (more info there).  
 This storage is fully asynchronous, as well as the application made with FastAPI.  
+
+
+## Demo
+
+Good password  
+<img src="demo/img/password-success.png" width="540"/>
+
+Weak leaked password  
+<img src="demo/img/password-warning.png" width="540"/>
+
+Admin page  
+<img src="demo/img/admin.png" width="540"/>
