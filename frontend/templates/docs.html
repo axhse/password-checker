@@ -12,7 +12,7 @@
         <div id="swagger-ui"></div>
         <script>
             window.onload = function() {
-                fetch('/static/docs/openapi.json')
+                fetch('/static/openapi.json')
                 .then(response => response.json())
                 .then(data => {
                     const ui = SwaggerUIBundle({
