@@ -15,7 +15,7 @@ from storage.auxiliary.filetools import (
     write,
 )
 from storage.auxiliary.models.functional_revision import FunctionalRevision
-from storage.auxiliary.models.state import DatasetID, PwnedStorageState, StoredStateKeys
+from storage.auxiliary.models.state import DatasetID, PwnedStorageState
 from storage.models.abstract import (
     PwnedRangeProvider,
     PwnedStorage,
@@ -35,17 +35,24 @@ class PwnedStorageBase(PwnedStorage):
     STATE_WAIT_TIME_SECONDS: float = 0.5
     """Wait time in seconds between state checks."""
 
-    STATE_FILE: str = "state.json"
-    """The filename for storing state information."""
-
     IMPLEMENTATION_FILE: str = "implementation.json"
     """The filename for storing implementation information."""
+
+    REVISION_INFO_FILE: str = "revision.json"
+    """The filename for storing revision information."""
+
+    STATE_FILE: str = "state.json"
+    """The filename for storing state information."""
 
     IMPLEMENTATION_NAME_KEY: str = "name"
     """The key in the implementation information JSON file to identify the implementation name."""
 
     DEFAULT_DATASET: DatasetID = DatasetID.A
     """The default dataset to be used."""
+
+    class __JsonKeys:
+        DATASET = "dataset"
+        IGNORE = "ignore"
 
     def __init__(
         self,
@@ -61,10 +68,13 @@ class PwnedStorageBase(PwnedStorage):
         :param revision_coroutine_quantity: The number of coroutines to be used for requesting hashed during revision.
         """
         self.__resource_dir: str = resource_dir
-        self.__state_file_path: str = join_paths(resource_dir, self.STATE_FILE)
         self.__implementation_file_path: str = join_paths(
             resource_dir, self.IMPLEMENTATION_FILE
         )
+        self.__revision_file_path: str = join_paths(
+            resource_dir, self.REVISION_INFO_FILE
+        )
+        self.__state_file_path: str = join_paths(resource_dir, self.STATE_FILE)
         self._range_provider: PwnedRangeProvider = range_provider
         self._revision: FunctionalRevision = FunctionalRevision()
         self._revision_coroutine_quantity: int = revision_coroutine_quantity
@@ -92,7 +102,9 @@ class PwnedStorageBase(PwnedStorage):
         """
         if not self._revision.is_idle:
             return UpdateResult.BUSY
+        self.__export_ignored_revision()
         self._revision.indicate_started()
+        self.__try_export_revision()
         await self.__update_safely()
         if self._revision.is_failed:
             return UpdateResult.FAILED
@@ -107,7 +119,9 @@ class PwnedStorageBase(PwnedStorage):
         """
         if not self._revision.is_idle:
             return UpdateResponse.BUSY
+        self.__export_ignored_revision()
         self._revision.indicate_started()
+        self.__try_export_revision()
         asyncio.create_task(self.__update_safely())
         return UpdateResponse.STARTED
 
@@ -118,7 +132,9 @@ class PwnedStorageBase(PwnedStorage):
         """
         if not self._revision.is_preparing:
             return UpdateCancellationResponse.IRRELEVANT
+        self.__export_ignored_revision()
         self._revision.indicate_cancellation()
+        self.__try_export_revision()
         return UpdateCancellationResponse.ACCEPTED
 
     @staticmethod
@@ -166,7 +182,9 @@ class PwnedStorageBase(PwnedStorage):
         try:
             await self.__update(new_dataset)
         except Exception as error:
+            self.__export_ignored_revision()
             self._revision.indicate_failed(error)
+            self.__try_export_revision()
         if self._revision.is_cancelled or self._revision.is_failed:
             await self.__try_remove_dataset(new_dataset)
         if self._revision.is_completed:
@@ -175,20 +193,28 @@ class PwnedStorageBase(PwnedStorage):
     async def __update(self, new_dataset: DatasetID) -> None:
         await self.__prepare_new_dataset(new_dataset)
         if self._revision.is_cancelling:
+            self.__export_ignored_revision()
             self._revision.indicate_cancelled()
+            self.__try_export_revision()
             await self.__try_remove_dataset(new_dataset)
             return
+        self.__export_ignored_revision()
         self._revision.indicate_prepared()
+        self.__try_export_revision()
         while self.__state.has_active_requests:
             await self.__wait_a_little()
         self.__state.mark_to_be_ignored()
-        self.__dump_state()
+        self.__export_state()
         self.__state.active_dataset = new_dataset
         self.__state.mark_not_to_be_ignored()
-        self.__dump_state()
+        self.__export_state()
+        self.__export_ignored_revision()
         self._revision.indicate_transited()
+        self.__try_export_revision()
         await self.__try_remove_dataset(new_dataset.other)
+        self.__export_ignored_revision()
         self._revision.indicate_completed()
+        self.__try_export_revision()
 
     async def __prepare_new_dataset(self, dataset: DatasetID) -> None:
         dataset_dir = self._get_dataset_dir(dataset)
@@ -207,22 +233,36 @@ class PwnedStorageBase(PwnedStorage):
             # TODO: Log error.
             pass
 
-    def __dump_state(self) -> None:
-        state = dict()
-        if self.__state.active_dataset is not None:
-            state[StoredStateKeys.ACTIVE_DATASET] = self.__state.active_dataset.value
-        if self.__state.is_to_be_ignored:
-            state[StoredStateKeys.IGNORE_STATE_IN_FILE] = self.__state.is_to_be_ignored
-        write(self.__state_file_path, json.dumps(state), overwrite=True)
-
-    def __dump_implementation_info(self) -> None:
+    def __export_implementation_info(self) -> None:
         info = self._get_setting_dict()
         info[self.IMPLEMENTATION_NAME_KEY] = self.__class_name
         write(self.__implementation_file_path, json.dumps(info), overwrite=True)
 
-    def __remove_state_file_if_is_not_relevant(self) -> None:
+    def __export_ignored_revision(self) -> None:
+        if not self.__try_export_revision(ignore=True):
+            raise RuntimeError("Revision export failed.")
+
+    def __try_export_revision(self, ignore=False) -> bool:
+        try:
+            info = self._revision.to_dto().to_json()
+            if ignore:
+                info[self.__JsonKeys.IGNORE] = True
+            write(self.__revision_file_path, json.dumps(info), overwrite=True)
+            return True
+        except Exception:
+            return False
+
+    def __export_state(self) -> None:
+        state = dict()
+        if self.__state.active_dataset is not None:
+            state[self.__JsonKeys.DATASET] = self.__state.active_dataset.value
+        if self.__state.is_to_be_ignored:
+            state[self.__JsonKeys.IGNORE] = self.__state.is_to_be_ignored
+        write(self.__state_file_path, json.dumps(state), overwrite=True)
+
+    def __verify_implementation(self) -> None:
         if not is_file(self.__implementation_file_path):
-            self.__dump_implementation_info()
+            self.__export_implementation_info()
             return
         try:
             implementation_info = json.loads(read(self.__implementation_file_path))
@@ -237,10 +277,26 @@ class PwnedStorageBase(PwnedStorage):
             for key, value in self._get_setting_dict().items()
         ):
             return
+        remove_file(self.__revision_file_path)
         remove_file(self.__state_file_path)
-        self.__dump_implementation_info()
+        self.__export_implementation_info()
 
-    def __import_state_from_file(self) -> None:
+    def __import_revision(self) -> None:
+        if not is_file(self.__revision_file_path):
+            return
+        try:
+            revision_info = json.loads(read(self.__revision_file_path))
+        except JSONDecodeError:
+            return
+        if not isinstance(revision_info, dict):
+            return
+        if revision_info.get(self.__JsonKeys.IGNORE, False):
+            return
+        revision = Revision.from_json(revision_info)
+        if revision is not None and revision.status.is_idle:
+            self._revision = FunctionalRevision(revision)
+
+    def __import_state(self) -> None:
         if not is_file(self.__state_file_path):
             return
         try:
@@ -249,17 +305,15 @@ class PwnedStorageBase(PwnedStorage):
             return
         if not isinstance(state, dict):
             return
-        if (
-            StoredStateKeys.IGNORE_STATE_IN_FILE in state
-            and state[StoredStateKeys.IGNORE_STATE_IN_FILE]
-        ):
+        if state.get(self.__JsonKeys.IGNORE, False):
             return
-        if StoredStateKeys.ACTIVE_DATASET in state:
+        if self.__JsonKeys.DATASET in state:
             for dataset in DatasetID:
-                if dataset.value == state[StoredStateKeys.ACTIVE_DATASET]:
+                if dataset.value == state[self.__JsonKeys.DATASET]:
                     self.__state.active_dataset = dataset
 
     def __initialize(self) -> None:
         make_dir_if_not_exists(self.__resource_dir)
-        self.__remove_state_file_if_is_not_relevant()
-        self.__import_state_from_file()
+        self.__verify_implementation()
+        self.__import_revision()
+        self.__import_state()

@@ -114,7 +114,9 @@ def print_revision_information(
         if previous_status != RevisionStatus.NEW:
             write("\n")
         write(
-            stylize_text(f"[FAILED] {revision.error}", [TextStyle.BOLD, TextStyle.RED])
+            stylize_text(
+                f"[FAILED] {revision.error_message}", [TextStyle.BOLD, TextStyle.RED]
+            )
         )
         write("\n")
         return

@@ -1,12 +1,12 @@
 from enum import Enum
-from typing import Optional
+from typing import Dict, Optional
 
 
 class RevisionStatus(Enum):
     """Update status."""
 
     NEW = "new"
-    """No update has been performed for the instance of storage."""
+    """No update has been performed."""
 
     PREPARATION = "preparation"
     """New data is being prepared."""
@@ -29,6 +29,19 @@ class RevisionStatus(Enum):
     CANCELLED = "cancelled"
     """New data preparation has cancelled."""
 
+    @property
+    def is_idle(self) -> bool:
+        """
+        Check if the revision status is one of the idle statuses.
+        :return: True if the status is idle, False otherwise.
+        """
+        return self in [
+            RevisionStatus.NEW,
+            RevisionStatus.COMPLETED,
+            RevisionStatus.FAILED,
+            RevisionStatus.CANCELLED,
+        ]
+
 
 class Revision:
     """Update-related information."""
@@ -39,7 +52,7 @@ class Revision:
         progress: Optional[int] = None,
         start_ts: Optional[int] = None,
         end_ts: Optional[int] = None,
-        error: Optional[Exception] = None,
+        error_message: Optional[str] = None,
     ):
         """
         Initialize a new Revision instance.
@@ -48,13 +61,36 @@ class Revision:
         :param progress: The progress percentage of the update.
         :param start_ts: The start timestamp of the update.
         :param end_ts: The end timestamp of the update.
-        :param error: The error associated with the update.
+        :param error_message: The error message associated with the update.
         """
         self._status: RevisionStatus = status
         self._progress: Optional[int] = progress
         self._start_ts: Optional[int] = start_ts
         self._end_ts: Optional[int] = end_ts
-        self._error: Optional[Exception] = error
+        self._error_message: Optional[str] = error_message
+
+    @staticmethod
+    def from_json(json: Dict):
+        status_value = json.get("status")
+        progress = json.get("progress")
+        start_ts = json.get("start_ts")
+        end_ts = json.get("end_ts")
+        error_message = json.get("error_message")
+        status = None
+        for revision_status in RevisionStatus:
+            if revision_status.value == status_value:
+                status = revision_status
+        return (
+            Revision(status, progress, start_ts, end_ts, error_message)
+            if (
+                status is not None
+                and (progress is None or type(progress) == int)
+                and (start_ts is None or type(start_ts) == int)
+                and (end_ts is None or type(end_ts) == int)
+                and (error_message is None or type(error_message) == str)
+            )
+            else None
+        )
 
     @property
     def status(self) -> RevisionStatus:
@@ -89,9 +125,18 @@ class Revision:
         return self._end_ts
 
     @property
-    def error(self) -> Optional[Exception]:
+    def error_message(self) -> Optional[Exception]:
         """
-        Get the error associated with the update.
-        :return: The error associated with the update.
+        Get the error message associated with the update.
+        :return: The error message associated with the update.
         """
-        return self._error
+        return self._error_message
+
+    def to_json(self) -> Dict:
+        return {
+            "status": self._status.value,
+            "progress": self._progress,
+            "start_ts": self._start_ts,
+            "end_ts": self._end_ts,
+            "error_message": self._error_message,
+        }

@@ -93,13 +93,7 @@ async def get_revision_info(
     require_admin_session(request)
 
     revision = services.storage.revision
-    response_content = {
-        "status": revision.status.value,
-        "start_ts": revision.start_ts,
-        "end_ts": revision.end_ts,
-        "progress": revision.progress,
-        "error_message": revision.error and str(revision.error),
-    }
+    response_content = revision.to_json()
     for key in list(response_content.keys()):
         if response_content[key] is None:
             response_content.pop(key)

@@ -3,7 +3,7 @@ import asyncio
 import pytest
 
 from storage.auxiliary import hasher
-from storage.auxiliary.filetools import join_paths, make_empty_dir
+from storage.auxiliary.filetools import join_paths
 from storage.implementations.binary_storage import BinaryPwnedStorage
 from storage.implementations.mocked_requester import MockedPwnedRequester
 from storage.models.abstract import PwnedRangeProvider, PwnedStorage
@@ -18,6 +18,16 @@ from tests.shared import temp_dir
 NUMERIC_TYPE = NumericType.BYTE
 
 
+def create_storage(temp_dir: str, range_provider: PwnedRangeProvider) -> PwnedStorage:
+    resource_dir = join_paths(temp_dir, "storage")
+    settings = BinaryPwnedStorageSettings(
+        StorageFileQuantity.N_256,
+        NUMERIC_TYPE,
+    )
+    coroutines = max(16, 1 + len(MockedPwnedRequester.INCLUDED_PASSWORDS))
+    return BinaryPwnedStorage(resource_dir, range_provider, coroutines, settings)
+
+
 @pytest.fixture(scope="session")
 def range_provider() -> PwnedRangeProvider:
     return MockedPwnedRequester("pwned-checker-tests")
@@ -25,14 +35,7 @@ def range_provider() -> PwnedRangeProvider:
 
 @pytest.fixture(scope="session")
 def storage(temp_dir: str, range_provider: PwnedRangeProvider) -> PwnedStorage:
-    resource_dir = join_paths(temp_dir, "storage")
-    make_empty_dir(resource_dir)
-    settings = BinaryPwnedStorageSettings(
-        StorageFileQuantity.N_256,
-        NUMERIC_TYPE,
-    )
-    coroutines = max(16, 1 + len(MockedPwnedRequester.INCLUDED_PASSWORDS))
-    return BinaryPwnedStorage(resource_dir, range_provider, coroutines, settings)
+    return create_storage(temp_dir, range_provider)
 
 
 @pytest.fixture(scope="session")
@@ -80,3 +83,21 @@ async def test_leak_check(updated_storage: PwnedStorage):
         not_expected_suffix = password_hash[5:]
         assert not_expected_suffix not in records1
         assert not_expected_suffix not in records2
+
+
+@pytest.mark.asyncio
+async def test_revision_info(
+    updated_storage: PwnedStorage, temp_dir: str, range_provider: PwnedRangeProvider
+):
+    revision = updated_storage.revision
+    assert revision.status == RevisionStatus.COMPLETED
+    assert revision.start_ts is not None
+    assert revision.end_ts is not None
+    assert revision.error_message is None
+    assert revision.progress is None
+    new_revision = create_storage(temp_dir, range_provider).revision
+    assert new_revision.status == revision.status
+    assert new_revision.start_ts == revision.start_ts
+    assert new_revision.end_ts == revision.end_ts
+    assert new_revision.error_message == revision.error_message
+    assert new_revision.progress == revision.progress

@@ -8,9 +8,18 @@ from storage.models.revision import Revision, RevisionStatus
 class FunctionalRevision(Revision):
     """Extended Revision class with auxiliary behavior."""
 
-    def __init__(self):
-        """Initialize a new FunctionalRevision instance."""
-        super().__init__()
+    def __init__(self, revision: Revision = Revision()):
+        """
+        Initialize a new FunctionalRevision instance.
+        :param revision: Initial revision.
+        """
+        super().__init__(
+            revision.status,
+            revision.progress,
+            revision.start_ts,
+            revision.end_ts,
+            revision.error_message,
+        )
         self.__prepared_prefix_quantity: Optional[int] = None
 
     @property
@@ -25,12 +34,7 @@ class FunctionalRevision(Revision):
         Check if the revision is in an idle state.
         :return: True if the revision is idle, False otherwise.
         """
-        return self._status in [
-            RevisionStatus.NEW,
-            RevisionStatus.COMPLETED,
-            RevisionStatus.FAILED,
-            RevisionStatus.CANCELLED,
-        ]
+        return self._status.is_idle
 
     @property
     def is_preparing(self) -> bool:
@@ -84,7 +88,7 @@ class FunctionalRevision(Revision):
         """Indicate that the preparation has started."""
         self._start_ts = int(time.time())
         self._end_ts = None
-        self._error = None
+        self._error_message = None
         self.__prepared_prefix_quantity = 0
         self._status = RevisionStatus.PREPARATION
 
@@ -116,7 +120,7 @@ class FunctionalRevision(Revision):
         :param error: The error associated with the failure.
         """
         self.__set_end_ts()
-        self._error = error
+        self._error_message = str(error)
         self._status = RevisionStatus.FAILED
 
     def count_prepared_prefix(self) -> None:
@@ -133,7 +137,7 @@ class FunctionalRevision(Revision):
             self.progress,
             self.start_ts,
             self.end_ts,
-            self.error,
+            self.error_message,
         )
 
     def __set_end_ts(self) -> None:

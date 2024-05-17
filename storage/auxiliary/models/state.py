@@ -84,10 +84,3 @@ class PwnedStorageState:
     def mark_not_to_be_ignored(self) -> None:
         """Mark the state not to be ignored."""
         self.__is_to_be_ignored = False
-
-
-class StoredStateKeys:
-    """Keys used for storing state information."""
-
-    ACTIVE_DATASET = "dataset"
-    IGNORE_STATE_IN_FILE = "ignore"
