@@ -72,6 +72,7 @@ class BinaryPwnedStorage(PwnedStorageBase):
                         self._revision.is_cancelling
                         or self._revision.is_stopping
                         or self._revision.is_failed
+                        or self._revision.has_preparation_failed
                     ):
                         return
                     hash_prefix = number_to_hex_code(

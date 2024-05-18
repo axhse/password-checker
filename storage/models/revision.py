@@ -29,6 +29,9 @@ class RevisionStatus(Enum):
     FAILED = "failed"
     """Update has failed."""
 
+    PREPARATION_FAILED = "preparation_failed"
+    """Preparation of new data has failed."""
+
     STOPPED = "stopped"
     """Preparation of new data has stopped."""
 
@@ -45,6 +48,7 @@ class RevisionStatus(Enum):
             RevisionStatus.NEW,
             RevisionStatus.COMPLETED,
             RevisionStatus.FAILED,
+            RevisionStatus.PREPARATION_FAILED,
             RevisionStatus.STOPPED,
             RevisionStatus.CANCELLED,
         ]

@@ -33,6 +33,22 @@ class RangeRequestCounter(PwnedRangeProvider):
         return self.RANGE
 
 
+class UnstableRangeProvider(RangeRequestCounter):
+    ERROR_MESSAGE = "Range request failure by UnstableRangeProvider."
+
+    def __init__(self):
+        super().__init__()
+        self.prefix_request_counts = dict()
+        self.has_failures = False
+
+    async def get_range(self, prefix):
+        if not self.has_failures:
+            if len(self.prefix_request_counts) > 3 * 10**4:
+                self.has_failures = True
+                raise RuntimeError(self.ERROR_MESSAGE)
+        return await super().get_range(prefix)
+
+
 def create_range_provider() -> PwnedRangeProvider:
     return MockedPwnedRequester("pwned-checker-tests")
 
@@ -169,3 +185,21 @@ async def test_update_pause(temp_dir: str):
 
     found_range = await storage.get_range("00001")
     assert found_range == request_counter.RANGE
+
+
+@pytest.mark.asyncio
+async def test_data_preparation_failure(temp_dir: str):
+    range_provider = UnstableRangeProvider()
+    storage = create_storage(temp_dir, range_provider)
+
+    assert await storage.update() == UpdateResult.FAILED
+    assert storage.revision.status == RevisionStatus.PREPARATION_FAILED
+    assert storage.revision.progress not in [None, 0]
+
+    assert await storage.update() == UpdateResult.DONE
+    assert storage.revision.status == RevisionStatus.COMPLETED
+    assert len(range_provider.prefix_request_counts) == PWNED_PREFIX_CAPACITY
+    assert all(count == 1 for count in range_provider.prefix_request_counts.values())
+
+    found_range = await storage.get_range("00001")
+    assert found_range == range_provider.RANGE

@@ -35,7 +35,11 @@ class FunctionalRevision(Revision):
 
     @property
     def progress(self) -> Optional[int]:
-        if not self.is_preparing and not self.is_stopped:
+        if (
+            not self.is_preparing
+            and not self.is_stopped
+            and not self.has_preparation_failed
+        ):
             return None
         return 100 * self.__prepared_prefix_quantity // PWNED_PREFIX_CAPACITY
 
@@ -111,11 +115,22 @@ class FunctionalRevision(Revision):
         """
         return self._status == RevisionStatus.FAILED
 
+    @property
+    def has_preparation_failed(self) -> bool:
+        """
+        Check if preparation of new data has failed during revision.
+        :return: True if preparation has failed, False otherwise.
+        """
+        return self._status == RevisionStatus.PREPARATION_FAILED
+
     def indicate_started(self) -> None:
         """Indicate that the preparation has started."""
         self._end_ts = None
         self._error_message = None
-        if self._status != RevisionStatus.STOPPED:
+        if (
+            self._status != RevisionStatus.STOPPED
+            and self.status != RevisionStatus.PREPARATION_FAILED
+        ):
             self._start_ts = int(time.time())
         self._status = RevisionStatus.PREPARATION
 
@@ -161,6 +176,15 @@ class FunctionalRevision(Revision):
         self.__set_end_ts()
         self._error_message = str(error)
         self._status = RevisionStatus.FAILED
+
+    def indicate_preparation_failed(self, error: Exception) -> None:
+        """
+        Indicate that preparation of new data has failed during revision with the given error.
+        :param error: The error associated with the failure.
+        """
+        self.__set_end_ts()
+        self._error_message = str(error)
+        self._status = RevisionStatus.PREPARATION_FAILED
 
     def count_prepared_prefix(self, batch_index: int) -> None:
         """Increment the count of prepared prefixes."""

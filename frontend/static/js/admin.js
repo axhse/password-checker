@@ -10,23 +10,17 @@ function updateRevisionButtons(revisionStatus) {
     const buttonRevisionStart = document.getElementById(
         'button-revision-start',
     );
+    const buttonRevisionContinue = document.getElementById(
+        'button-revision-continue',
+    );
     const buttonRevisionPause = document.getElementById(
         'button-revision-pause',
     );
     const buttonRevisionCancel = document.getElementById(
         'button-revision-cancel',
     );
-    if (
-        revisionStatus === 'new' ||
-        revisionStatus === 'completed' ||
-        revisionStatus === 'failed' ||
-        revisionStatus === 'stopped' ||
-        revisionStatus === 'cancelled'
-    ) {
-        buttonRevisionStart.hidden = false;
-    } else {
-        buttonRevisionStart.hidden = true;
-    }
+    buttonRevisionStart.hidden = revisionStatus !== 'new' && revisionStatus !== 'completed' && revisionStatus !== 'failed' && revisionStatus !== 'cancelled';
+    buttonRevisionContinue.hidden = revisionStatus !== 'stopped' && revisionStatus !== 'preparation_failed';
     buttonRevisionPause.hidden = revisionStatus !== 'preparation';
     buttonRevisionCancel.hidden =
         revisionStatus !== 'preparation' && revisionStatus !== 'stopped';
@@ -63,7 +57,10 @@ function showRevisionInfo(data) {
                 statusText = 'The update has completed successfully';
                 break;
             case 'failed':
-                statusText = 'The update failed with an error';
+                statusText = 'The update has failed';
+                break;
+            case 'preparation_failed':
+                statusText = 'Preparation of new data has failed';
                 break;
             case 'stopped':
                 statusText = 'The update has stopped';

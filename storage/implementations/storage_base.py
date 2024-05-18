@@ -27,6 +27,13 @@ from storage.models.abstract import (
 from storage.models.revision import Revision
 
 
+class PreparationError(Exception):
+    """Error that describes data preparation failure."""
+
+    def __init__(self, error: Exception):
+        super().__init__(error)
+
+
 class PwnedStorageBase(PwnedStorage):
     """The base for Pwned storage."""
 
@@ -106,7 +113,7 @@ class PwnedStorageBase(PwnedStorage):
         self._revision.indicate_started()
         self.__try_export_revision()
         await self.__update_safely()
-        if self._revision.is_failed:
+        if self._revision.is_failed or self._revision.has_preparation_failed:
             return UpdateResult.FAILED
         if self._revision.is_cancelled:
             return UpdateResult.CANCELLED
@@ -186,7 +193,10 @@ class PwnedStorageBase(PwnedStorage):
             await self.__update(new_dataset)
         except Exception as error:
             self.__export_ignored_revision()
-            self._revision.indicate_failed(error)
+            if isinstance(error, PreparationError):
+                self._revision.indicate_preparation_failed(error)
+            else:
+                self._revision.indicate_failed(error)
             self.__try_export_revision()
         if self._revision.is_cancelled or self._revision.is_failed:
             await self.__try_remove_dataset(new_dataset)
@@ -195,6 +205,8 @@ class PwnedStorageBase(PwnedStorage):
 
     async def __update(self, new_dataset: DatasetID) -> None:
         await self.__prepare_new_dataset(new_dataset)
+        if self._revision.has_preparation_failed:
+            return
         if self._revision.is_stopping:
             self.__export_ignored_revision()
             self._revision.indicate_stopped()
@@ -233,10 +245,16 @@ class PwnedStorageBase(PwnedStorage):
             await asyncio.to_thread(lambda: make_empty_dir(dataset_dir))
         await asyncio.gather(
             *[
-                self._prepare_batch(dataset, batch_index)
+                self.__prepare_batch(dataset, batch_index)
                 for batch_index in range(self._revision_coroutine_quantity)
             ]
         )
+
+    async def __prepare_batch(self, dataset: DatasetID, batch_index: int) -> None:
+        try:
+            await self._prepare_batch(dataset, batch_index)
+        except Exception as error:
+            self._revision.indicate_preparation_failed(error)
 
     async def __try_remove_dataset(self, dataset: DatasetID) -> None:
         try:
