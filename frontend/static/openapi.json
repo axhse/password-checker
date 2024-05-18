@@ -161,6 +161,34 @@
 				}
 			}
 		},
+		"/admin/revision/pause": {
+			"post": {
+				"tags": ["Admin API"],
+				"summary": "Request Storage Update Pause",
+				"parameters": [{
+					"name": "session_token",
+					"in": "header",
+					"description": "Authorization JWT",
+					"required": true,
+					"schema": {
+						"type": "string",
+						"example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcxMTQ3OTkxOX0.LzBgeAN3Ph1ggJ0DcMnAT7nIZx5XO4_jrfa_twyBNio"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateActionResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/admin/revision/cancel": {
 			"post": {
 				"tags": ["Admin API"],
@@ -181,7 +209,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/UpdateCancellationResponse"
+									"$ref": "#/components/schemas/UpdateActionResponse"
 								}
 							}
 						}
@@ -280,7 +308,7 @@
 					}
 				}
 			},
-			"UpdateCancellationResponse": {
+			"UpdateActionResponse": {
 				"type": "object",
 				"properties": {
 					"response": {
@@ -290,7 +318,7 @@
 							"irrelevant"
 						],
 						"example": "accepted",
-						"description": "Possible response when requesting an update cancellation"
+						"description": "Possible response when requesting an update cancellation or pause"
 					}
 				}
 			}

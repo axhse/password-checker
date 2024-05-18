@@ -10,6 +10,9 @@ function updateRevisionButtons(revisionStatus) {
     const buttonRevisionStart = document.getElementById(
         'button-revision-start',
     );
+    const buttonRevisionPause = document.getElementById(
+        'button-revision-pause',
+    );
     const buttonRevisionCancel = document.getElementById(
         'button-revision-cancel',
     );
@@ -17,25 +20,29 @@ function updateRevisionButtons(revisionStatus) {
         revisionStatus === 'new' ||
         revisionStatus === 'completed' ||
         revisionStatus === 'failed' ||
+        revisionStatus === 'stopped' ||
         revisionStatus === 'cancelled'
     ) {
         buttonRevisionStart.hidden = false;
     } else {
         buttonRevisionStart.hidden = true;
     }
-    buttonRevisionCancel.hidden = revisionStatus !== 'preparation';
+    buttonRevisionPause.hidden = revisionStatus !== 'preparation';
+    buttonRevisionCancel.hidden =
+        revisionStatus !== 'preparation' && revisionStatus !== 'stopped';
 }
 
 function showRevisionInfo(data) {
     let content = '';
     if (data == null) {
-        content += '<p class="revision-no-info">Error: Unable to get information</p>';
+        content +=
+            '<p class="revision-no-info">Error: Unable to get information</p>';
     } else {
         updateRevisionButtons(data.status);
         let statusText = '?';
         switch (data.status) {
             case 'new':
-                statusText = 'There were no updated since app launch';
+                statusText = 'There were no storage updated';
                 break;
             case 'preparation':
                 statusText = 'New data is being prepared';
@@ -46,17 +53,23 @@ function showRevisionInfo(data) {
             case 'purge':
                 statusText = 'Cleaning up old data';
                 break;
+            case 'stoppage':
+                statusText = 'The update is stopping';
+                break;
             case 'cancellation':
-                statusText = 'The update is being canceled';
+                statusText = 'The update is cancelling';
                 break;
             case 'completed':
-                statusText = 'The update has been completed successfully';
+                statusText = 'The update has completed successfully';
                 break;
             case 'failed':
                 statusText = 'The update failed with an error';
                 break;
+            case 'stopped':
+                statusText = 'The update has stopped';
+                break;
             case 'cancelled':
-                statusText = 'The update has been canceled';
+                statusText = 'The update has canceled';
                 break;
         }
         content += `<p><span class="revision-prop">Status</span>&nbsp;&nbsp;${statusText}</p>`;
@@ -103,6 +116,19 @@ async function updateRevisionInfo() {
 async function requestUpdate() {
     await $.ajax({
         url: apiBaseUri + 'revision/start',
+        method: 'POST',
+        error: function (response) {
+            if (response.status === 401) {
+                redirectToLoginPage();
+            }
+        },
+    });
+    await updateRevisionInfo();
+}
+
+async function requestUpdatePause() {
+    await $.ajax({
+        url: apiBaseUri + 'revision/pause',
         method: 'POST',
         error: function (response) {
             if (response.status === 401) {

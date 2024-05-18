@@ -50,19 +50,30 @@ class BinaryPwnedStorage(PwnedStorageBase):
         file_quantity = self.__settings.file_quantity
         prefix_group_size = PWNED_PREFIX_CAPACITY // file_quantity
         coroutine_quantity = self._revision_coroutine_quantity
+        preparation_offset = self._revision.get_batch_preparation_offset(batch_index)
+        first_batch_file_index = file_quantity * batch_index // coroutine_quantity
+        file_offset = preparation_offset // prefix_group_size
+        first_prefix_index = (
+            first_batch_file_index * prefix_group_size + preparation_offset
+        )
         for file_index in range(
-            file_quantity * batch_index // coroutine_quantity,
+            first_batch_file_index + file_offset,
             file_quantity * (batch_index + 1) // coroutine_quantity,
         ):
-            if self._revision.is_cancelling or self._revision.is_failed:
-                return
             file_path = join_paths(
                 dataset_dir, f"{number_to_hex_code(file_index, file_quantity)}.dat"
             )
-            with open(file_path, "wb") as data_file:
+            with open(file_path, "ab") as data_file:
                 for prefix_index in range(
-                    file_index * prefix_group_size, (file_index + 1) * prefix_group_size
+                    max(file_index * prefix_group_size, first_prefix_index),
+                    (file_index + 1) * prefix_group_size,
                 ):
+                    if (
+                        self._revision.is_cancelling
+                        or self._revision.is_stopping
+                        or self._revision.is_failed
+                    ):
+                        return
                     hash_prefix = number_to_hex_code(
                         prefix_index, PWNED_PREFIX_CAPACITY
                     )
@@ -73,4 +84,4 @@ class BinaryPwnedStorage(PwnedStorageBase):
                             for record in records.split()
                         )
                     )
-                    self._revision.count_prepared_prefix()
+                    self._revision.count_prepared_prefix(batch_index)

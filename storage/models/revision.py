@@ -9,25 +9,31 @@ class RevisionStatus(Enum):
     """No update has been performed."""
 
     PREPARATION = "preparation"
-    """New data is being prepared."""
+    """New data is preparing."""
 
     TRANSITION = "transition"
-    """Transition to the new data is being performed."""
+    """Transition to new data is performing."""
 
     PURGE = "purge"
-    """Removal of the old data is being performed."""
+    """Removal of old data is performing."""
+
+    STOPPAGE = "stoppage"
+    """Preparation of new data is stopping."""
 
     CANCELLATION = "cancellation"
-    """New data preparation is being cancelling."""
+    """Preparation of new data is cancelling."""
 
     COMPLETED = "completed"
-    """The update has completed successfully."""
+    """Update has completed successfully."""
 
     FAILED = "failed"
-    """The update has failed."""
+    """Update has failed."""
+
+    STOPPED = "stopped"
+    """Preparation of new data has stopped."""
 
     CANCELLED = "cancelled"
-    """New data preparation has cancelled."""
+    """Preparation of new data has cancelled."""
 
     @property
     def is_idle(self) -> bool:
@@ -39,6 +45,7 @@ class RevisionStatus(Enum):
             RevisionStatus.NEW,
             RevisionStatus.COMPLETED,
             RevisionStatus.FAILED,
+            RevisionStatus.STOPPED,
             RevisionStatus.CANCELLED,
         ]
 

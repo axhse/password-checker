@@ -6,7 +6,8 @@ from storage.auxiliary import hasher
 from storage.auxiliary.filetools import join_paths
 from storage.implementations.binary_storage import BinaryPwnedStorage
 from storage.implementations.mocked_requester import MockedPwnedRequester
-from storage.models.abstract import PwnedRangeProvider, PwnedStorage
+from storage.models.abstract import PwnedRangeProvider, PwnedStorage, UpdateResult
+from storage.models.pwned import PWNED_PREFIX_CAPACITY
 from storage.models.revision import RevisionStatus
 from storage.models.settings import (
     BinaryPwnedStorageSettings,
@@ -18,19 +19,37 @@ from tests.shared import temp_dir
 NUMERIC_TYPE = NumericType.BYTE
 
 
+class RangeRequestCounter(PwnedRangeProvider):
+    RANGE = f"{'0' * 35}:1"
+
+    def __init__(self):
+        self.prefix_request_counts = dict()
+
+    async def get_range(self, prefix):
+        await asyncio.sleep(0)
+        self.prefix_request_counts[prefix] = 1 + self.prefix_request_counts.get(
+            prefix, 0
+        )
+        return self.RANGE
+
+
+def create_range_provider() -> PwnedRangeProvider:
+    return MockedPwnedRequester("pwned-checker-tests")
+
+
 def create_storage(temp_dir: str, range_provider: PwnedRangeProvider) -> PwnedStorage:
     resource_dir = join_paths(temp_dir, "storage")
     settings = BinaryPwnedStorageSettings(
         StorageFileQuantity.N_256,
         NUMERIC_TYPE,
     )
-    coroutines = max(16, 1 + len(MockedPwnedRequester.INCLUDED_PASSWORDS))
+    coroutines = 3
     return BinaryPwnedStorage(resource_dir, range_provider, coroutines, settings)
 
 
 @pytest.fixture(scope="session")
 def range_provider() -> PwnedRangeProvider:
-    return MockedPwnedRequester("pwned-checker-tests")
+    return create_range_provider()
 
 
 @pytest.fixture(scope="session")
@@ -101,3 +120,52 @@ async def test_revision_info(
     assert new_revision.end_ts == revision.end_ts
     assert new_revision.error_message == revision.error_message
     assert new_revision.progress == revision.progress
+
+
+@pytest.mark.asyncio
+async def test_update_pause(temp_dir: str):
+    request_counter = RangeRequestCounter()
+    storage = create_storage(temp_dir, request_counter)
+
+    async def __wait_for_progress(initial_progress):
+        while storage.revision.status != RevisionStatus.PREPARATION:
+            await asyncio.sleep(0)
+        while storage.revision.progress == initial_progress:
+            await asyncio.sleep(0)
+        assert len(request_counter.prefix_request_counts) > 0
+
+    async def __wait_for_stoppage():
+        while storage.revision.status != RevisionStatus.STOPPED:
+            assert storage.revision.status == RevisionStatus.STOPPAGE
+            await asyncio.sleep(0)
+
+    def __assert_all_prefixes_requested_once():
+        assert all(
+            count == 1 for count in request_counter.prefix_request_counts.values()
+        )
+
+    storage.request_update()
+    await __wait_for_progress(0)
+    storage.request_update_pause()
+    await __wait_for_stoppage()
+    __assert_all_prefixes_requested_once()
+    start_ts = storage.revision.start_ts
+
+    intermediate_progress = storage.revision.progress
+    storage = create_storage(temp_dir, request_counter)
+    storage.request_update()
+    await __wait_for_progress(intermediate_progress)
+    storage.request_update_pause()
+    await __wait_for_stoppage()
+    __assert_all_prefixes_requested_once()
+    assert storage.revision.start_ts == start_ts
+
+    assert await storage.update() == UpdateResult.DONE
+    assert storage.revision.status == RevisionStatus.COMPLETED
+    assert storage.revision.start_ts == start_ts
+
+    assert len(request_counter.prefix_request_counts) == PWNED_PREFIX_CAPACITY
+    __assert_all_prefixes_requested_once()
+
+    found_range = await storage.get_range("00001")
+    assert found_range == request_counter.RANGE

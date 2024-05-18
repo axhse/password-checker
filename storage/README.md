@@ -38,6 +38,12 @@ Request asynchronous update in the background:
 response = storage.request_update()
 ```
 
+Request update pause:
+
+```python
+response = storage.request_update_pause()
+```
+
 Request update cancellation:
 
 ```python

@@ -20,6 +20,7 @@ from storage.models.abstract import (
     PwnedRangeProvider,
     PwnedStorage,
     UpdateCancellationResponse,
+    UpdatePauseResponse,
     UpdateResponse,
     UpdateResult,
 )
@@ -53,6 +54,7 @@ class PwnedStorageBase(PwnedStorage):
     class __JsonKeys:
         DATASET = "dataset"
         IGNORE = "ignore"
+        BATCH_PREPARATION_OFFSETS = "batch_preparation_offsets"
 
     def __init__(
         self,
@@ -76,7 +78,9 @@ class PwnedStorageBase(PwnedStorage):
         )
         self.__state_file_path: str = join_paths(resource_dir, self.STATE_FILE)
         self._range_provider: PwnedRangeProvider = range_provider
-        self._revision: FunctionalRevision = FunctionalRevision()
+        self._revision: FunctionalRevision = FunctionalRevision(
+            revision_coroutine_quantity
+        )
         self._revision_coroutine_quantity: int = revision_coroutine_quantity
         self.__state: PwnedStorageState = PwnedStorageState()
         self.__initialize()
@@ -96,10 +100,6 @@ class PwnedStorageBase(PwnedStorage):
             self.__state.count_finished_request()
 
     async def update(self) -> UpdateResult:
-        """
-        Request an update of all Pwned password leak records.
-        :return: The update response status.
-        """
         if not self._revision.is_idle:
             return UpdateResult.BUSY
         self.__export_ignored_revision()
@@ -113,10 +113,6 @@ class PwnedStorageBase(PwnedStorage):
         return UpdateResult.DONE
 
     def request_update(self) -> UpdateResponse:
-        """
-        Request an update of all Pwned password leak records.
-        :return: The update response status.
-        """
         if not self._revision.is_idle:
             return UpdateResponse.BUSY
         self.__export_ignored_revision()
@@ -125,16 +121,23 @@ class PwnedStorageBase(PwnedStorage):
         asyncio.create_task(self.__update_safely())
         return UpdateResponse.STARTED
 
-    def request_update_cancellation(self) -> UpdateCancellationResponse:
-        """
-        Request an update cancellation.
-        :return: The update cancellation response status.
-        """
+    def request_update_pause(self) -> UpdatePauseResponse:
         if not self._revision.is_preparing:
+            return UpdatePauseResponse.IRRELEVANT
+        self.__export_ignored_revision()
+        self._revision.indicate_stoppage()
+        self.__try_export_revision()
+        return UpdatePauseResponse.ACCEPTED
+
+    def request_update_cancellation(self) -> UpdateCancellationResponse:
+        is_initially_stopped = self._revision.is_stopped
+        if not self._revision.is_preparing and not is_initially_stopped:
             return UpdateCancellationResponse.IRRELEVANT
         self.__export_ignored_revision()
         self._revision.indicate_cancellation()
         self.__try_export_revision()
+        if is_initially_stopped:
+            asyncio.create_task(self.__perform_cancellation())
         return UpdateCancellationResponse.ACCEPTED
 
     @staticmethod
@@ -192,11 +195,13 @@ class PwnedStorageBase(PwnedStorage):
 
     async def __update(self, new_dataset: DatasetID) -> None:
         await self.__prepare_new_dataset(new_dataset)
-        if self._revision.is_cancelling:
+        if self._revision.is_stopping:
             self.__export_ignored_revision()
-            self._revision.indicate_cancelled()
+            self._revision.indicate_stopped()
             self.__try_export_revision()
-            await self.__try_remove_dataset(new_dataset)
+            return
+        if self._revision.is_cancelling:
+            await self.__perform_cancellation()
             return
         self.__export_ignored_revision()
         self._revision.indicate_prepared()
@@ -216,9 +221,16 @@ class PwnedStorageBase(PwnedStorage):
         self._revision.indicate_completed()
         self.__try_export_revision()
 
+    async def __perform_cancellation(self):
+        self.__export_ignored_revision()
+        self._revision.indicate_cancelled()
+        self.__try_export_revision()
+        await self.__try_remove_dataset(self.__state.active_dataset.other)
+
     async def __prepare_new_dataset(self, dataset: DatasetID) -> None:
-        dataset_dir = self._get_dataset_dir(dataset)
-        await asyncio.to_thread(lambda: make_empty_dir(dataset_dir))
+        if not self._revision.has_progress():
+            dataset_dir = self._get_dataset_dir(dataset)
+            await asyncio.to_thread(lambda: make_empty_dir(dataset_dir))
         await asyncio.gather(
             *[
                 self._prepare_batch(dataset, batch_index)
@@ -247,6 +259,11 @@ class PwnedStorageBase(PwnedStorage):
             info = self._revision.to_dto().to_json()
             if ignore:
                 info[self.__JsonKeys.IGNORE] = True
+            if self._revision.is_idle:
+                info[self.__JsonKeys.BATCH_PREPARATION_OFFSETS] = [
+                    self._revision.get_batch_preparation_offset(batch_index)
+                    for batch_index in range(self._revision_coroutine_quantity)
+                ]
             write(self.__revision_file_path, json.dumps(info), overwrite=True)
             return True
         except Exception:
@@ -292,9 +309,21 @@ class PwnedStorageBase(PwnedStorage):
             return
         if revision_info.get(self.__JsonKeys.IGNORE, False):
             return
+        batch_preparation_offsets = revision_info.get(
+            self.__JsonKeys.BATCH_PREPARATION_OFFSETS
+        )
+        if batch_preparation_offsets is not None:
+            if type(batch_preparation_offsets) != list:
+                return
+            for value in batch_preparation_offsets:
+                if type(value) != int:
+                    return
         revision = Revision.from_json(revision_info)
-        if revision is not None and revision.status.is_idle:
-            self._revision = FunctionalRevision(revision)
+        if revision is None or not revision.status.is_idle:
+            return
+        self._revision = FunctionalRevision(
+            self._revision_coroutine_quantity, revision, batch_preparation_offsets
+        )
 
     def __import_state(self) -> None:
         if not is_file(self.__state_file_path):
@@ -307,10 +336,9 @@ class PwnedStorageBase(PwnedStorage):
             return
         if state.get(self.__JsonKeys.IGNORE, False):
             return
-        if self.__JsonKeys.DATASET in state:
-            for dataset in DatasetID:
-                if dataset.value == state[self.__JsonKeys.DATASET]:
-                    self.__state.active_dataset = dataset
+        for dataset in DatasetID:
+            if dataset.value == state.get(self.__JsonKeys.DATASET):
+                self.__state.active_dataset = dataset
 
     def __initialize(self) -> None:
         make_dir_if_not_exists(self.__resource_dir)

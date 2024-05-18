@@ -40,6 +40,16 @@ class UpdateCancellationResponse(Enum):
     """There is no ongoing data preparation."""
 
 
+class UpdatePauseResponse(Enum):
+    """Possible response when requesting an update pause."""
+
+    ACCEPTED = "accepted"
+    """The stoppage has started."""
+
+    IRRELEVANT = "irrelevant"
+    """There is no ongoing data preparation."""
+
+
 class PwnedStorage(ABC):
     """Stores Pwned password leak records."""
 
@@ -75,6 +85,14 @@ class PwnedStorage(ABC):
         """
         Request an update of all Pwned password leak records.
         :return: The update response status.
+        """
+        pass
+
+    @abstractmethod
+    def request_update_pause(self) -> UpdatePauseResponse:
+        """
+        Request an update pause.
+        :return: The update pause response status.
         """
         pass
 

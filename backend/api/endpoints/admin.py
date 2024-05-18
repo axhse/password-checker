@@ -111,6 +111,17 @@ async def request_storage_update(
     return JSONResponse(content=response_content)
 
 
+@router.post("/revision/pause", tags=[API_TAG], response_class=JSONResponse)
+async def request_storage_update_pause(
+    request: Request,
+    services: Services = Depends(dependencies.services),
+) -> JSONResponse:
+    require_admin_session(request)
+
+    response_content = {"response": services.storage.request_update_pause().value}
+    return JSONResponse(content=response_content)
+
+
 @router.post("/revision/cancel", tags=[API_TAG], response_class=JSONResponse)
 async def request_storage_update_cancellation(
     request: Request,
